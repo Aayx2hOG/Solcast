@@ -1,4 +1,87 @@
 @import "tailwindcss";
+
+@theme {
+  /* Ultra-Premium Fintech Color System */
+  --color-background: 11 15 20;        /* #0B0F14 - Near black (darker) */
+  --color-foreground: 230 232 235;     /* #E6E8EB - Primary text */
+  
+  --color-card: 18 24 33;              /* #121821 - Primary panels */
+  --color-card-foreground: 230 232 235;
+  
+  --color-popover: 18 24 33;
+  --color-popover-foreground: 230 232 235;
+  
+  --color-primary: 76 95 213;          /* #4C5FD5 - Muted indigo accent */
+  --color-primary-foreground: 230 232 235;
+  
+  --color-secondary: 22 29 41;         /* #161D29 - Secondary panels */
+  --color-secondary-foreground: 154 163 178;
+  
+  --color-muted: 22 29 41;
+  --color-muted-foreground: 154 163 178;  /* #9AA3B2 - Secondary text */
+  
+  --color-accent: 158 140 90;          /* #9E8C5A - Muted gold (optional) */
+  --color-accent-foreground: 230 232 235;
+  
+  --color-destructive: 185 28 28;
+  --color-destructive-foreground: 230 232 235;
+  
+  --color-border: 255 255 255;         /* Will use with opacity(0.06) */
+  --color-input: 22 29 41;
+  --color-ring: 76 95 213;
+  
+  --radius: 0.125rem;                  /* Minimal rounding (2px) */
+}
+
+* {
+  @apply border-border/[0.06];
+}
+
+body {
+  @apply bg-background text-foreground;
+  font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
+  letter-spacing: -0.011em;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Refined scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Typography hierarchy - professional and compact */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  letter-spacing: -0.022em;
+  color: rgb(230, 232, 235);
+}
+
+/* Subtle transitions only */
+* {
+  transition: opacity 0.15s ease, border-color 0.15s ease;
+}
+
+/* Professional focus states */
+*:focus-visible {
+  outline: 1px solid rgb(100, 116, 139);
+  outline-offset: 2px;
+}
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
