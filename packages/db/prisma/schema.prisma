@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id             String     @id @default(uuid())
+  walletAddress  String     @unique
+  username       String?
+  email          String?    @unique
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  createdMarkets Market[]   @relation("MarketCreator")
+  positions      Position[]
+  orders         Order[]
+}
+
+model Market {
+  id                  String         @id @default(uuid())
+  marketId            String         @unique
+  question            String
+  description         String
+  createdAt           DateTime       @default(now())
+  endTimestamp        DateTime
+  resolutionTimestamp DateTime
+  category            MarketCategory
+  status              MarketStatus   @default(ACTIVE)
+  oracleSource        String
+  yesLiquidity        BigInt         @default(0)
+  noLiquidity         BigInt         @default(0)
+  totalYesShares      BigInt         @default(0)
+  totalNoShares       BigInt         @default(0)
+  totalVolume         BigInt         @default(0)
+
+  creatorId String
+  creator   User   @relation("MarketCreator", fields: [creatorId], references: [id])
+
+  positions Position[]
+  orders    Order[]
+}
+
+model Position {
+  id            String   @id @default(uuid())
+  userId        String
+  marketId      String
+  yesShares     BigInt   @default(0)
+  noShares      BigInt   @default(0)
+  totalInvested BigInt   @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id])
+  market Market @relation(fields: [marketId], references: [id])
+}
+
+model Order {
+  id         String      @id @default(uuid())
+  userId     String
+  marketId   String
+  orderType  OrderType
+  outcome    Outcome
+  status     OrderStatus @default(PENDING)
+  shares     BigInt
+  price      BigInt
+  txSignatue String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id])
+  market Market @relation(fields: [marketId], references: [id])
+}
+
+enum MarketCategory {
+  SPORTS
+  POLITICS
+  CRYPTO
+  ECONOMICS
+  ENTERTAINMENT
+  SCIENCE
+  OTHER
+}
+
+enum MarketStatus {
+  ACTIVE
+  RESOLVED
+  INVALID
+}
+
+enum Outcome {
+  YES
+  NO
+}
+
+enum OrderType {
+  BUY
+  SELL
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
