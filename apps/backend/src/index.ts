@@ -2,8 +2,8 @@ import express from 'express';
 import cors from "cors";
 import type { Request, Response } from "express";
 import { authMiddleware } from './middleware';
-import { prismaClient } from 'db/client';
 import jwt from 'jsonwebtoken';
+import { prismaClient } from 'db/client';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -12,7 +12,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'secret-key';
 app.use(cors());
 app.use(express.json());
 
-app.post('api/auth/login', async (req: Request, res: Response) => {
+app.post('/api/auth/login', async (req: Request, res: Response) => {
     const { walletAddress } = req.body;
     if (!walletAddress) {
         return res.status(400).json({ message: "Wallet address is required" });
@@ -70,7 +70,8 @@ app.get('/api/accounts/:address', async (req: Request, res: Response) => {
     const user = await prismaClient.user.findUnique({
         where: { walletAddress: req.params.address },
         include: {
-            positions: { include: { market: true }, orders: true }
+            positions: { include: { market: true } },
+            orders: true
         }
     });
     if (!user) {
