@@ -1,11 +1,20 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Trophy, TrendingUp, Target, Activity } from "lucide-react";
+import { Trophy, TrendingUp, Target, Activity, Loader2 } from "lucide-react";
+import { api } from "@/lib/services/api";
 
-// Mock data - in production this would come from the blockchain
-const leaderboardData = [];
+interface Trader {
+  rank: number;
+  address: string;
+  totalPnl: number;
+  totalVolume: number;
+  winRate: number;
+  activePositions: number;
+  resolvedMarkets: number;
+}
 
 const getRankBadge = (rank: number) => {
   if (rank === 1) return "🥇";
@@ -15,7 +24,49 @@ const getRankBadge = (rank: number) => {
 };
 
 export default function LeaderboardPage() {
+  const [leaderboardData, setLeaderboardData] = useState<Trader[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      setIsLoading(true);
+      try {
+        const result = await api.getLeaderboard();
+        if (result.data?.traders) {
+          setLeaderboardData(result.data.traders);
+        }
+      } catch (err) {
+        console.error("Failed to fetch leaderboard:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchLeaderboard();
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8 flex items-center justify-center min-h-[50vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
   const topTrader = leaderboardData[0];
+
+  if (!topTrader) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card className="p-12 text-center">
+          <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+          <h2 className="text-2xl font-bold mb-2">No Traders Yet</h2>
+          <p className="text-muted-foreground">
+            Be the first to make a trade and appear on the leaderboard!
+          </p>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">

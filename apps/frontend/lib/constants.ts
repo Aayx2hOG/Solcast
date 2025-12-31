@@ -8,6 +8,9 @@ export const RPC_ENDPOINT =
 export const WEBSOCKET_ENDPOINT = 
   process.env.NEXT_PUBLIC_WS_ENDPOINT || "ws://localhost:8900";
 
+export const API_BASE_URL = 
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+
 export const CATEGORIES = [
   "Sports",
   "Politics",
