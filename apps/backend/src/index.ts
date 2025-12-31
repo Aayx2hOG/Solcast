@@ -9,10 +9,8 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'secret-key';
 
-// Flag to track if database is available
 let dbAvailable = true;
 
-// Mock data for development when database is not available
 const mockMarkets = [
     {
         id: "1",
