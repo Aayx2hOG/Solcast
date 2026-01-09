@@ -4,11 +4,6 @@ import { OracleData } from "../models/OracleData";
 
 export class ESPNFetcher implements Fetcher {
   async fetch(marketId: string): Promise<OracleData> {
-    /**
-     * marketId format:
-     * NBA-401585593
-     * NFL-401547665
-     */
 
     const [league, eventId] = marketId.split("-");
 

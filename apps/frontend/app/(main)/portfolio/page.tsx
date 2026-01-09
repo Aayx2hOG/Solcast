@@ -59,13 +59,11 @@ export default function PortfolioPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
-      {/* Header */}
       <div>
         <h1 className="text-4xl font-bold mb-2">Portfolio</h1>
         <p className="text-muted-foreground">Track your positions and performance</p>
       </div>
 
-      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -127,7 +125,6 @@ export default function PortfolioPage() {
         </Card>
       </div>
 
-      {/* Positions Table */}
       <Card>
         <CardHeader>
           <CardTitle>Active Positions</CardTitle>

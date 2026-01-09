@@ -32,7 +32,6 @@ export default function AnalyticsPage() {
       .sort((a, b) => b.totalVolume - a.totalVolume)
       .slice(0, 5);
 
-    // Volume over time (mock data - would come from historical records)
     const volumeTimeline = [
       { period: "Week 1", volume: totalVolume * 0.1 },
       { period: "Week 2", volume: totalVolume * 0.15 },
@@ -54,9 +53,8 @@ export default function AnalyticsPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
-      {/* Header */}
       <div>
-        <h1 className="text-4xl font-bold mb-2">📊 Analytics</h1>
+        <h1 className="text-4xl font-bold mb-2">Analytics</h1>
         <p className="text-muted-foreground">
           Platform statistics and market insights
         </p>
@@ -113,7 +111,6 @@ export default function AnalyticsPage() {
         </Card>
       </div>
 
-      {/* Category Breakdown */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -146,7 +143,6 @@ export default function AnalyticsPage() {
         </CardContent>
       </Card>
 
-      {/* Top Markets by Volume */}
       <Card>
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -212,7 +208,6 @@ export default function AnalyticsPage() {
         </CardContent>
       </Card>
 
-      {/* Additional Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader>

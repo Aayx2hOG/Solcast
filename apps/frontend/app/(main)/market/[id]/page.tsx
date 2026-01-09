@@ -18,7 +18,6 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
     return markets.find((m) => m.marketId === parseInt(id));
   }, [markets, id]);
 
-  // Mock chart data - in production, this would come from historical data
   const chartData: PricePoint[] = useMemo(() => {
     if (!market) return [];
     
@@ -57,7 +56,6 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
-      {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-3">
           <Badge variant="secondary">{market.category}</Badge>
@@ -77,7 +75,6 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
         <p className="text-lg text-muted-foreground">{market.description}</p>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-3">
@@ -142,11 +139,8 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
         </Card>
       </div>
 
-      {/* Main Content Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - Chart and Details */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Current Prices */}
           <Card>
             <CardHeader>
               <CardTitle>Current Prices</CardTitle>
@@ -177,10 +171,8 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
             </CardContent>
           </Card>
 
-          {/* Price Chart */}
           <PriceChart data={chartData} />
 
-          {/* Market Details */}
           <Card>
             <CardHeader>
               <CardTitle>Market Details</CardTitle>
@@ -221,7 +213,6 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
           </Card>
         </div>
 
-        {/* Right Column - Trading Panel */}
         <div className="space-y-6">
           {market.status === "Active" ? (
             <TradingPanel
@@ -242,7 +233,6 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
             </Card>
           )}
 
-          {/* Market Info */}
           <Card>
             <CardHeader>
               <CardTitle>How It Works</CardTitle>

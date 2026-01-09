@@ -93,7 +93,6 @@ app.post('/api/auth/login', async (req: Request, res: Response) => {
     } catch (error) {
         console.log("Database unavailable, using mock auth");
         dbAvailable = false;
-        // Mock auth for development
         if (!mockUsers[walletAddress]) {
             mockUsers[walletAddress] = { id: walletAddress, walletAddress };
         }
@@ -287,7 +286,6 @@ app.post('/api/secure/positions', authMiddleware, async (req: Request, res: Resp
 });
 
 app.get('/api/leaderboard', async (req: Request, res: Response) => {
-    // Mock leaderboard data
     res.json({
         traders: [
             { rank: 1, address: "7xKX...9Qwe", totalPnl: 15420.50, totalVolume: 125000, winRate: 68.5, activePositions: 12, resolvedMarkets: 45 },
@@ -309,7 +307,7 @@ process.on('SIGINT', async () => {
 });
 
 app.listen(PORT, () => {
-    console.log(`🚀 Backend server running on http://localhost:${PORT}`);
-    console.log(`📊 Health check: http://localhost:${PORT}/health`);
-    console.log(`📈 Markets API: http://localhost:${PORT}/api/markets`);
+    console.log(`Backend server running on http://localhost:${PORT}`);
+    console.log(`Health check: http://localhost:${PORT}/health`);
+    console.log(`Markets API: http://localhost:${PORT}/api/markets`);
 });

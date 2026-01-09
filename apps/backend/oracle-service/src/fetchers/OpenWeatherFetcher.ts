@@ -4,7 +4,6 @@ import { OracleData } from ".././models/OracleData";
 import { ENV } from ".././config/env";
 export class OpenWeatherFetcher implements Fetcher {
   async fetch(marketId: string): Promise<OracleData> {
-    // marketId: "delhi-temp"
     const [city] = marketId.split("-");
 
     const res = await axios.get(

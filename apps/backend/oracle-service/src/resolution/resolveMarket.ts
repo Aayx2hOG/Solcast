@@ -43,7 +43,6 @@ export async function resolveMarket(
     }
   }
 
-  /* ===== SPORTS / ELECTION (EVENT MARKETS) ===== */
   if (marketType === "SPORTS" || marketType === "ELECTION") {
     const result = results.find(
       r => r.healthy === true && typeof r.value === "string"
@@ -60,7 +59,6 @@ export async function resolveMarket(
     };
   }
 
-  /* ===== NUMERIC MARKETS (CRYPTO / WEATHER) ===== */
   const minSources = Math.max(
     1,
     Math.ceil(fetchers.length * 0.6)

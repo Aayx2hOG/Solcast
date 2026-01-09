@@ -60,7 +60,6 @@ export default function ExplorerPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
-      {/* Header */}
       <div>
         <h1 className="text-4xl font-bold mb-2">Market Explorer</h1>
         <p className="text-muted-foreground">
@@ -68,9 +67,7 @@ export default function ExplorerPage() {
         </p>
       </div>
 
-      {/* Search and Filters */}
       <Card className="p-4 space-y-4">
-        {/* Search Bar */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -81,7 +78,6 @@ export default function ExplorerPage() {
           />
         </div>
 
-        {/* Category Filter */}
         <div className="space-y-2">
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4" />
@@ -101,7 +97,6 @@ export default function ExplorerPage() {
           </div>
         </div>
 
-        {/* Status Filter */}
         <div className="space-y-2">
           <span className="text-sm font-medium">Status</span>
           <div className="flex flex-wrap gap-2">
@@ -118,7 +113,6 @@ export default function ExplorerPage() {
           </div>
         </div>
 
-        {/* Sort Options */}
         <div className="space-y-2">
           <span className="text-sm font-medium">Sort By</span>
           <div className="flex gap-2">
@@ -147,7 +141,6 @@ export default function ExplorerPage() {
         </div>
       </Card>
 
-      {/* Results */}
       <div>
         <p className="text-sm text-muted-foreground mb-4">
           {filteredMarkets.length} market{filteredMarkets.length !== 1 ? "s" : ""} found

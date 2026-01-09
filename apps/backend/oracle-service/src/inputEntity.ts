@@ -14,21 +14,21 @@ function isValidMarketType(type: string): type is MarketType {
 
 export function startInputListener() {
   console.log(
-    "📥 Enter input: CRYPTO BTC-USDT | WEATHER Delhi | SPORTS IPL_FINAL"
+    "Enter input: CRYPTO BTC-USDT | WEATHER Delhi | SPORTS IPL_FINAL"
   );
 
   rl.on("line", (line) => {
     const [typeRaw, ...idParts] = line.trim().split(/\s+/);
 
     if (!typeRaw || idParts.length === 0) {
-      console.log("❌ Invalid format");
+      console.log("Invalid format");
       return;
     }
 
     const type = typeRaw.toUpperCase();
 
     if (!isValidMarketType(type)) {
-      console.log("❌ Invalid market type:", type);
+      console.log("Invalid market type:", type);
       return;
     }
 
@@ -42,6 +42,6 @@ export function startInputListener() {
 
     ACTIVE_MARKETS.push(market);
 
-    console.log("✅ Market registered:", market);
+    console.log("Market registered:", market);
   });
 }

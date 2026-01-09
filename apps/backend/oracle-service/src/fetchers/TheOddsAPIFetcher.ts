@@ -5,11 +5,6 @@ import { ENV } from "../config/env";
 
 export class TheOddsAPIFetcher implements Fetcher {
   async fetch(marketId: string): Promise<OracleData> {
-    /**
-     * marketId examples:
-     * NBA
-     * NFL
-     */
 
     const sportKey = this.mapSport(marketId);
 
@@ -32,7 +27,6 @@ export class TheOddsAPIFetcher implements Fetcher {
       throw new Error("TheOddsAPI: no odds data");
     }
 
-    // Pick the team with the lowest price (favorite)
     const favorite = outcomes.reduce((best: any, cur: any) =>
       cur.price < best.price ? cur : best
     );
@@ -41,7 +35,7 @@ export class TheOddsAPIFetcher implements Fetcher {
       marketId,
       value: favorite.name,
       source: "TheOddsAPI",
-      confidence: 0.7, // odds ≠ truth
+      confidence: 0.7,
       timestamp: Date.now(),
       healthy: true,
     };

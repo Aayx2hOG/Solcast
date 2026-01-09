@@ -17,9 +17,9 @@ interface Trader {
 }
 
 const getRankBadge = (rank: number) => {
-  if (rank === 1) return "🥇";
-  if (rank === 2) return "🥈";
-  if (rank === 3) return "🥉";
+  if (rank === 1) return "#1";
+  if (rank === 2) return "#2";
+  if (rank === 3) return "#3";
   return `#${rank}`;
 };
 
@@ -70,15 +70,13 @@ export default function LeaderboardPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
-      {/* Header */}
       <div>
-        <h1 className="text-4xl font-bold mb-2">🏆 Leaderboard</h1>
+        <h1 className="text-4xl font-bold mb-2">Leaderboard</h1>
         <p className="text-muted-foreground">
           Top traders ranked by profit and performance
         </p>
       </div>
 
-      {/* Top Trader Highlight */}
       <Card className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border-yellow-500/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -110,7 +108,6 @@ export default function LeaderboardPage() {
         </CardContent>
       </Card>
 
-      {/* Leaderboard Table */}
       <Card>
         <CardHeader>
           <CardTitle>All Traders</CardTitle>
@@ -124,12 +121,10 @@ export default function LeaderboardPage() {
               >
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-6">
-                    {/* Rank */}
                     <div className="text-3xl font-bold w-16 text-center">
                       {getRankBadge(trader.rank)}
                     </div>
 
-                    {/* Address */}
                     <div className="flex-1">
                       <p className="font-mono font-bold text-lg">{trader.address}</p>
                       <div className="flex items-center gap-3 mt-1">
@@ -143,7 +138,6 @@ export default function LeaderboardPage() {
                       </div>
                     </div>
 
-                    {/* Stats Grid */}
                     <div className="grid grid-cols-3 gap-6 text-center">
                       <div>
                         <div className="flex items-center justify-center gap-1 mb-1">
@@ -181,7 +175,6 @@ export default function LeaderboardPage() {
         </CardContent>
       </Card>
 
-      {/* Info Card */}
       <Card className="bg-muted/50">
         <CardContent className="pt-6">
           <p className="text-sm text-muted-foreground">

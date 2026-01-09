@@ -124,7 +124,6 @@ export default function CreateMarketPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-3xl mx-auto space-y-8">
-        {/* Header */}
         <div>
           <h1 className="text-4xl font-bold mb-2">Create Market</h1>
           <p className="text-muted-foreground">
@@ -132,7 +131,6 @@ export default function CreateMarketPage() {
           </p>
         </div>
 
-        {/* Form */}
         <Card>
           <CardHeader>
             <CardTitle>Market Details</CardTitle>
@@ -142,7 +140,6 @@ export default function CreateMarketPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Question */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">
                   Question <span className="text-red-500">*</span>
@@ -159,7 +156,6 @@ export default function CreateMarketPage() {
                 </p>
               </div>
 
-              {/* Description */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">
                   Description <span className="text-red-500">*</span>
@@ -177,7 +173,6 @@ export default function CreateMarketPage() {
                 </p>
               </div>
 
-              {/* Category */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">
                   Category <span className="text-red-500">*</span>
@@ -196,7 +191,6 @@ export default function CreateMarketPage() {
                 </div>
               </div>
 
-              {/* End Date/Time */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium flex items-center gap-2">
@@ -221,7 +215,6 @@ export default function CreateMarketPage() {
                 </div>
               </div>
 
-              {/* Resolution Date/Time */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium flex items-center gap-2">
@@ -246,7 +239,6 @@ export default function CreateMarketPage() {
                 </div>
               </div>
 
-              {/* Oracle Source */}
               <div className="space-y-2">
                 <label className="text-sm font-medium">
                   Oracle/Data Source <span className="text-red-500">*</span>
@@ -263,7 +255,6 @@ export default function CreateMarketPage() {
                 </p>
               </div>
 
-              {/* Initial Liquidity */}
               <div className="space-y-2">
                 <label className="text-sm font-medium flex items-center gap-2">
                   <DollarSign className="h-4 w-4" />
@@ -283,7 +274,6 @@ export default function CreateMarketPage() {
                 </p>
               </div>
 
-              {/* Submit Button */}
               <div className="pt-4">
                 <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
                   {isLoading ? (
@@ -300,7 +290,6 @@ export default function CreateMarketPage() {
           </CardContent>
         </Card>
 
-        {/* Info Card */}
         <Card className="bg-muted/50">
           <CardHeader>
             <CardTitle className="text-base">Important Guidelines</CardTitle>
