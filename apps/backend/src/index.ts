@@ -4,12 +4,53 @@ import type { Request, Response } from "express";
 import { authMiddleware } from './middleware';
 import jwt from 'jsonwebtoken';
 import { prismaClient } from 'db/client';
+import { WebSocketServer, WebSocket } from 'ws';
+import { createServer } from 'http';
 
 const app = express();
+const server = createServer(app);
 const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'secret-key';
 
 let dbAvailable = true;
+
+const wss = new WebSocketServer({server, path: '/ws'});
+const marketSubs : Map<string, Set<WebSocket>> = new Map();
+
+wss.on('connection', (ws) => {
+    ws.on('message', async (data) => {
+        try {
+            const msg = JSON.parse(data.toString());
+            if(msg.action === 'subscribe' && msg.marketId){
+                if (!marketSubs.has(msg.marketId)){
+                    marketSubs.set(msg.marketId, new Set());
+                }
+                marketSubs.get(msg.marketId)!.add(ws);
+                ws.send(JSON.stringify({type: "subscribed", marketId: msg.marketId}));
+            }
+            if (msg.action === 'unsubscribe' && msg.marketId){
+                if (marketSubs.has(msg.marketId) && marketSubs.get(msg.marketId)!.has(ws)){
+                    marketSubs.get(msg.marketId)!.delete(ws);
+                }
+                ws.send(JSON.stringify({type: "unsubscribed", marketId: msg.marketId}));
+            }
+        }catch(e){
+            console.log(e);
+        }
+    });
+    ws.on('close', () => {
+        marketSubs.forEach((set) => {
+            set.delete(ws);
+        });
+    });
+});
+
+function broadcastPrice(marketId: string, data: {yesPrice: number, noPrice: number, volume: number}){
+    const subs = marketSubs.get(marketId);
+    if (!subs) return;
+    const payload = JSON.stringify({type: 'MARKET_PRICE', marketId, ...data, ts: Date.now()})
+    subs.forEach((ws) => ws.readyState === WebSocket.OPEN && ws.send(payload));
+};
 
 const mockMarkets = [
     {
@@ -285,6 +326,135 @@ app.post('/api/secure/positions', authMiddleware, async (req: Request, res: Resp
     }
 });
 
+app.post('/api/trades', authMiddleware, async (req: Request, res: Response) => {
+   const {marketId, amount, type, shares, price, txHash} = req.body;
+   try {
+        if (!dbAvailable) throw new Error("DB unavailable");
+        const trade = await prismaClient.trade.create({
+            data: {
+                marketId,
+                userId: req.userId!,
+                type,
+                amount: BigInt(amount),
+                shares: BigInt(shares),
+                price: BigInt(price),
+                txHash,
+            }
+        });
+        const market = await prismaClient.market.findUnique({
+            where: {marketId}});
+            if (market){
+                broadcastPrice(marketId,  {
+                    yesPrice: Number(market.yesLiquidity) / (Number(market.yesLiquidity) + Number(market.noLiquidity)),
+                    noPrice: Number(market.noLiquidity) / (Number(market.yesLiquidity) + Number(market.noLiquidity)),
+                    volume: Number(market.totalVolume)
+                });
+            }
+
+            res.json({trade: {...trade, amount: trade.amount.toString(), shares: trade.shares.toString(), price: trade.price.toString()}});
+   }catch(e){
+    res.json({
+        trade: {
+            id: txHash,
+            marketId,
+            userId: req.userId!,
+            type,
+            amount: amount.toString(),
+            shares: shares.toString(),
+            price: price.toString(),
+            txHash,
+            createdAt: new Date()
+        }
+    });
+   } 
+});
+
+app.get('/api/markets/:id/trades', authMiddleware, async (req: Request, res: Response) => {
+      try {
+    if (!dbAvailable) throw new Error("DB unavailable");
+    const trades = await prismaClient.trade.findMany({
+      where: { marketId: req.params.id },
+      orderBy: { createdAt: 'desc' },
+      take: 50
+    });
+    res.json({ trades: trades.map(t => ({ ...t, amount: t.amount.toString(), shares: t.shares.toString(), price: t.price.toString() })) });
+  } catch (e) {
+    res.json({ trades: [] });
+  }
+});
+
+app.get('/api/users/:address/trades', authMiddleware, async(req: Request, res: Response) => {
+    try {
+        if (!dbAvailable) throw new Error("DB unavailable");
+        const user = await prismaClient.user.findUnique({
+            where: {walletAddress: req.params.address},
+            include: {trades: true},
+        });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        const trades = await prismaClient.trade.findMany({
+            where: {userId: user.id},
+            include: {market: true},
+            orderBy: {createdAt: 'desc'}
+        });
+        res.json({ trades: trades.map(t => ({ ...t, amount: t.amount.toString(), shares: t.shares.toString(), price: t.price.toString() })) });
+    }catch(e){
+        res.json({ trades: [] });
+    }
+});
+
+app.get('/api/markets/:id/stats', authMiddleware, async(req: Request, res: Response) => {
+    try {
+        if (!dbAvailable) throw new Error("DB unavailable");
+        const [stats, uniqueTrades] = await Promise.all([
+            prismaClient.trade.aggregate({
+                where:{marketId: req.params.id},
+                _sum:{amount: true},
+                _count: true
+            }),
+            prismaClient.trade.groupBy({
+                where:{marketId: req.params.id},
+                by: ['userId']
+            }),
+        ]);
+        res.json({
+            totalVolume: stats._sum.amount?.toString() || "0",
+            uniqueTraders: uniqueTrades.length,
+            totalTrades: stats._count
+        });
+    }catch(e){
+        res.json({ totalVolume: "0", uniqueTraders: 0, totalTrades: 0 });
+    }
+});
+
+app.get('/api/markets/:id/chart', async (req: Request, res: Response) => {
+  try {
+    if (!dbAvailable) throw new Error("DB unavailable");
+    const trades = await prismaClient.trade.findMany({
+      where: { marketId: req.params.id },
+      orderBy: { createdAt: 'asc' },
+      select: { createdAt: true, price: true, type: true }
+    });
+    
+    const hourly: Record<number, number[]> = {};
+    trades.forEach(t => {
+      const hour = new Date(t.createdAt).setMinutes(0, 0, 0);
+      if (!hourly[hour]) hourly[hour] = [];
+      hourly[hour].push(Number(t.price));
+    });
+    
+    const points = Object.entries(hourly).map(([ts, prices]) => ({
+      timestamp: Number(ts),
+      price: prices.reduce((a, b) => a + b, 0) / prices.length
+    }));
+    
+    res.json({ points });
+  } catch (error) {
+    res.json({ points: [] });
+  }
+});
+
 app.get('/api/leaderboard', async (req: Request, res: Response) => {
     res.json({
         traders: [
@@ -306,8 +476,9 @@ process.on('SIGINT', async () => {
     process.exit(0);
 });
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Backend server running on http://localhost:${PORT}`);
+    console.log(`WebSocket running on ws://localhost:${PORT}/ws`);
     console.log(`Health check: http://localhost:${PORT}/health`);
     console.log(`Markets API: http://localhost:${PORT}/api/markets`);
 });
