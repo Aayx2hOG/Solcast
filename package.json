@@ -20,5 +20,9 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "dependencies": {
+    "postprocessing": "^6.38.2",
+    "three": "^0.182.0"
+  }
 }

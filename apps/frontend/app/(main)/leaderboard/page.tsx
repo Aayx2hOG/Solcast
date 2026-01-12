@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { WobbleCardSimple } from "@/components/ui/wobble-card";
 import { Badge } from "@/components/ui/badge";
 import { Trophy, TrendingUp, Target, Activity, Loader2 } from "lucide-react";
 import { api } from "@/lib/services/api";
@@ -69,7 +70,7 @@ export default function LeaderboardPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
+    <div className="container mx-auto px-4 py-6 space-y-6">
       <div>
         <h1 className="text-4xl font-bold mb-2">Leaderboard</h1>
         <p className="text-muted-foreground">
@@ -77,36 +78,32 @@ export default function LeaderboardPage() {
         </p>
       </div>
 
-      <Card className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 border-yellow-500/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Trophy className="h-6 w-6 text-yellow-500" />
-            Top Trader
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Trader</p>
-              <p className="text-2xl font-bold font-mono">{topTrader.address}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Total P&L</p>
-              <p className="text-2xl font-bold text-green-600">
-                +${topTrader.totalPnl.toLocaleString()}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Win Rate</p>
-              <p className="text-2xl font-bold">{topTrader.winRate}%</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground mb-1">Total Volume</p>
-              <p className="text-2xl font-bold">${(topTrader.totalVolume / 1000).toFixed(0)}K</p>
-            </div>
+      <WobbleCardSimple glowColor="245, 158, 11" className="p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Trophy className="h-6 w-6 text-yellow-400" />
+          <span className="text-lg font-semibold text-white">Top Trader</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div>
+            <p className="text-sm text-white/50 mb-1">Trader</p>
+            <p className="text-xl font-bold font-mono text-white">{topTrader.address}</p>
           </div>
-        </CardContent>
-      </Card>
+          <div>
+            <p className="text-sm text-white/50 mb-1">Total P&L</p>
+            <p className="text-xl font-bold text-emerald-400">
+              +${topTrader.totalPnl.toLocaleString()}
+            </p>
+          </div>
+          <div>
+            <p className="text-sm text-white/50 mb-1">Win Rate</p>
+            <p className="text-xl font-bold text-white">{topTrader.winRate}%</p>
+          </div>
+          <div>
+            <p className="text-sm text-white/50 mb-1">Total Volume</p>
+            <p className="text-xl font-bold text-white">${(topTrader.totalVolume / 1000).toFixed(0)}K</p>
+          </div>
+        </div>
+      </WobbleCardSimple>
 
       <Card>
         <CardHeader>

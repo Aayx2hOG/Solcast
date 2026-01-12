@@ -2,6 +2,7 @@
 
 import { useSolana } from "@/lib/contexts/SolanaContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { WobbleCardSimple } from "@/components/ui/wobble-card";
 import { BarChart3, TrendingUp, Users, DollarSign, Activity, PieChart } from "lucide-react";
 import { useMemo } from "react";
 import { MarketCategory } from "@/lib/types";
@@ -52,7 +53,7 @@ export default function AnalyticsPage() {
   }, [markets]);
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
+    <div className="container mx-auto px-4 py-6 space-y-6">
       <div>
         <h1 className="text-4xl font-bold mb-2">Analytics</h1>
         <p className="text-muted-foreground">
@@ -62,56 +63,48 @@ export default function AnalyticsPage() {
 
       {/* Key Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Volume</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              ${(analytics.totalVolume / 1_000_000).toFixed(2)}M
-            </div>
-            <p className="text-xs text-muted-foreground">All-time trading volume</p>
-          </CardContent>
-        </Card>
+        <WobbleCardSimple glowColor="34, 197, 94" className="p-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-white/80">Total Volume</span>
+            <DollarSign className="h-4 w-4 text-emerald-400" />
+          </div>
+          <div className="text-2xl font-bold text-white">
+            ${(analytics.totalVolume / 1_000_000).toFixed(2)}M
+          </div>
+          <p className="text-xs text-white/50 mt-1">All-time trading volume</p>
+        </WobbleCardSimple>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Liquidity</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              ${(analytics.totalLiquidity / 1_000_000).toFixed(2)}M
-            </div>
-            <p className="text-xs text-muted-foreground">Available for trading</p>
-          </CardContent>
-        </Card>
+        <WobbleCardSimple glowColor="168, 85, 247" className="p-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-white/80">Total Liquidity</span>
+            <TrendingUp className="h-4 w-4 text-purple-400" />
+          </div>
+          <div className="text-2xl font-bold text-white">
+            ${(analytics.totalLiquidity / 1_000_000).toFixed(2)}M
+          </div>
+          <p className="text-xs text-white/50 mt-1">Available for trading</p>
+        </WobbleCardSimple>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Active Markets</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{analytics.activeMarkets}</div>
-            <p className="text-xs text-muted-foreground">Currently trading</p>
-          </CardContent>
-        </Card>
+        <WobbleCardSimple glowColor="59, 130, 246" className="p-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-white/80">Active Markets</span>
+            <Activity className="h-4 w-4 text-blue-400" />
+          </div>
+          <div className="text-2xl font-bold text-white">{analytics.activeMarkets}</div>
+          <p className="text-xs text-white/50 mt-1">Currently trading</p>
+        </WobbleCardSimple>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Resolved Markets</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{analytics.resolvedMarkets}</div>
-            <p className="text-xs text-muted-foreground">Completed markets</p>
-          </CardContent>
-        </Card>
+        <WobbleCardSimple glowColor="249, 115, 22" className="p-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-white/80">Resolved Markets</span>
+            <Users className="h-4 w-4 text-orange-400" />
+          </div>
+          <div className="text-2xl font-bold text-white">{analytics.resolvedMarkets}</div>
+          <p className="text-xs text-white/50 mt-1">Completed markets</p>
+        </WobbleCardSimple>
       </div>
 
-      <Card>
+      <Card glowColor="236, 72, 153">
         <CardHeader>
           <div className="flex items-center gap-2">
             <PieChart className="h-5 w-5" />
@@ -143,10 +136,10 @@ export default function AnalyticsPage() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card glowColor="6, 182, 212">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
+            <BarChart3 className="h-5 w-5 text-cyan-500" />
             <CardTitle>Top Markets by Volume</CardTitle>
           </div>
         </CardHeader>
@@ -209,38 +202,26 @@ export default function AnalyticsPage() {
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Avg Market Volume</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">
-              ${(analytics.avgMarketVolume / 1_000_000).toFixed(2)}M
-            </p>
-          </CardContent>
-        </Card>
+        <WobbleCardSimple glowColor="139, 92, 246" className="p-6">
+          <span className="text-sm font-medium text-white/80">Avg Market Volume</span>
+          <p className="text-2xl font-bold text-white mt-2">
+            ${(analytics.avgMarketVolume / 1_000_000).toFixed(2)}M
+          </p>
+        </WobbleCardSimple>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Total Markets</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{markets.length}</p>
-          </CardContent>
-        </Card>
+        <WobbleCardSimple glowColor="6, 182, 212" className="p-6">
+          <span className="text-sm font-medium text-white/80">Total Markets</span>
+          <p className="text-2xl font-bold text-white mt-2">{markets.length}</p>
+        </WobbleCardSimple>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Market Success Rate</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">
-              {markets.length > 0
-                ? ((analytics.resolvedMarkets / markets.length) * 100).toFixed(1)
-                : 0}%
-            </p>
-          </CardContent>
-        </Card>
+        <WobbleCardSimple glowColor="236, 72, 153" className="p-6">
+          <span className="text-sm font-medium text-white/80">Market Success Rate</span>
+          <p className="text-2xl font-bold text-white mt-2">
+            {markets.length > 0
+              ? ((analytics.resolvedMarkets / markets.length) * 100).toFixed(1)
+              : 0}%
+          </p>
+        </WobbleCardSimple>
       </div>
     </div>
   );
