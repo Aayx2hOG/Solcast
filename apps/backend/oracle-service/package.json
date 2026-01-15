@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:anomaly": "ts-node tests/anomalyDetection.test.ts",
+    "test:resolution": "ts-node tests/marketResolution.test.ts",
+    "test:all": "npm run test:anomaly && npm run test:resolution"
   },
   "keywords": [],
   "author": "",
