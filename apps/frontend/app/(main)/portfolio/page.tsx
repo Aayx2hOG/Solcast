@@ -3,6 +3,7 @@
 import { useSolana } from "@/lib/contexts/SolanaContext";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { WobbleCardSimple } from "@/components/ui/wobble-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Wallet, DollarSign, BarChart3 } from "lucide-react";
@@ -58,71 +59,63 @@ export default function PortfolioPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
+    <div className="container mx-auto px-4 py-6 space-y-6">
       <div>
         <h1 className="text-4xl font-bold mb-2">Portfolio</h1>
         <p className="text-muted-foreground">Track your positions and performance</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total Invested</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${portfolioStats.totalInvested}</div>
-            <p className="text-xs text-muted-foreground">USDC invested</p>
-          </CardContent>
-        </Card>
+        <WobbleCardSimple glowColor="34, 197, 94" className="p-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-white/80">Total Invested</span>
+            <DollarSign className="h-4 w-4 text-emerald-400" />
+          </div>
+          <div className="text-2xl font-bold text-white">${portfolioStats.totalInvested}</div>
+          <p className="text-xs text-white/50 mt-1">USDC invested</p>
+        </WobbleCardSimple>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Current Value</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${portfolioStats.totalValue}</div>
-            <p className="text-xs text-muted-foreground">Market value</p>
-          </CardContent>
-        </Card>
+        <WobbleCardSimple glowColor="59, 130, 246" className="p-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-white/80">Current Value</span>
+            <BarChart3 className="h-4 w-4 text-blue-400" />
+          </div>
+          <div className="text-2xl font-bold text-white">${portfolioStats.totalValue}</div>
+          <p className="text-xs text-white/50 mt-1">Market value</p>
+        </WobbleCardSimple>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Total P&L</CardTitle>
+        <WobbleCardSimple glowColor={portfolioStats.isProfitable ? "34, 197, 94" : "239, 68, 68"} className="p-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-white/80">Total P&L</span>
             {portfolioStats.isProfitable ? (
-              <TrendingUp className="h-4 w-4 text-green-600" />
+              <TrendingUp className="h-4 w-4 text-emerald-400" />
             ) : (
-              <TrendingDown className="h-4 w-4 text-red-600" />
+              <TrendingDown className="h-4 w-4 text-red-400" />
             )}
-          </CardHeader>
-          <CardContent>
-            <div
-              className={`text-2xl font-bold ${
-                portfolioStats.isProfitable ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {portfolioStats.isProfitable ? "+" : ""}${portfolioStats.totalPnl}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {portfolioStats.isProfitable ? "+" : ""}
-              {portfolioStats.pnlPercentage}%
-            </p>
-          </CardContent>
-        </Card>
+          </div>
+          <div
+            className={`text-2xl font-bold ${
+              portfolioStats.isProfitable ? "text-emerald-400" : "text-red-400"
+            }`}
+          >
+            {portfolioStats.isProfitable ? "+" : ""}${portfolioStats.totalPnl}
+          </div>
+          <p className="text-xs text-white/50 mt-1">
+            {portfolioStats.isProfitable ? "+" : ""}
+            {portfolioStats.pnlPercentage}%
+          </p>
+        </WobbleCardSimple>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium">Win Rate</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{portfolioStats.winRate}%</div>
-            <p className="text-xs text-muted-foreground">
-              {portfolioStats.activePositions} active positions
-            </p>
-          </CardContent>
-        </Card>
+        <WobbleCardSimple glowColor="168, 85, 247" className="p-6">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-medium text-white/80">Win Rate</span>
+            <TrendingUp className="h-4 w-4 text-purple-400" />
+          </div>
+          <div className="text-2xl font-bold text-white">{portfolioStats.winRate}%</div>
+          <p className="text-xs text-white/50 mt-1">
+            {portfolioStats.activePositions} active positions
+          </p>
+        </WobbleCardSimple>
       </div>
 
       <Card>

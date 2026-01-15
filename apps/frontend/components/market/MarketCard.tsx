@@ -19,9 +19,20 @@ export function MarketCard({ market, showVolume = true }: MarketCardProps) {
   const noPercentage = (market.noPrice * 100).toFixed(1);
   const isPriceUp = (market.priceChange24h ?? 0) > 0;
 
+  // Different glow colors based on market status
+  const glowColor = market.status === "Active" 
+    ? "76, 95, 213" // Purple-blue for active
+    : market.status === "Resolved" 
+      ? "34, 197, 94" // Green for resolved
+      : "239, 68, 68"; // Red for closed/cancelled
+
   return (
     <Link href={`/market/${market.marketId}`}>
-      <Card className="group cursor-pointer transition-opacity hover:opacity-70 bg-card">
+      <Card 
+        className="group cursor-pointer transition-all duration-300 hover:translate-y-[-2px] bg-card/80 backdrop-blur-sm"
+        enableGlow={true}
+        glowColor={glowColor}
+      >
         <CardHeader className="pb-2.5">
           <div className="flex items-start justify-between gap-2">
             <div className="flex-1">

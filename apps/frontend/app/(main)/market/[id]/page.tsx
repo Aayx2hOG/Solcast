@@ -3,6 +3,7 @@
 import { use, useMemo } from "react";
 import { useSolana } from "@/lib/contexts/SolanaContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { WobbleCardSimple } from "@/components/ui/wobble-card";
 import { Badge } from "@/components/ui/badge";
 import { TradingPanel } from "@/components/market/TradingPanel";
 import { PriceChart } from "@/components/charts/PriceChart";
@@ -55,7 +56,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
   const noPercentage = (market.noPrice * 100).toFixed(1);
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-8">
+    <div className="container mx-auto px-4 py-6 space-y-6">
       <div>
         <div className="flex items-center gap-2 mb-3">
           <Badge variant="secondary">{market.category}</Badge>
@@ -76,67 +77,43 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Volume
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-              <span className="text-2xl font-bold">
-                ${(market.totalVolume / 1_000_000).toFixed(2)}M
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        <WobbleCardSimple glowColor="34, 197, 94" className="p-5">
+          <span className="text-sm font-medium text-white/60">Total Volume</span>
+          <div className="flex items-center gap-2 mt-2">
+            <DollarSign className="h-4 w-4 text-emerald-400" />
+            <span className="text-2xl font-bold text-white">
+              ${(market.totalVolume / 1_000_000).toFixed(2)}M
+            </span>
+          </div>
+        </WobbleCardSimple>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Liquidity
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-              <span className="text-2xl font-bold">
-                ${((market.yesLiquidity + market.noLiquidity) / 1_000_000).toFixed(2)}M
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        <WobbleCardSimple glowColor="168, 85, 247" className="p-5">
+          <span className="text-sm font-medium text-white/60">Liquidity</span>
+          <div className="flex items-center gap-2 mt-2">
+            <TrendingUp className="h-4 w-4 text-purple-400" />
+            <span className="text-2xl font-bold text-white">
+              ${((market.yesLiquidity + market.noLiquidity) / 1_000_000).toFixed(2)}M
+            </span>
+          </div>
+        </WobbleCardSimple>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Shares
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-muted-foreground" />
-              <span className="text-2xl font-bold">
-                {((market.totalYesShares + market.totalNoShares) / 1_000_000).toFixed(2)}M
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+        <WobbleCardSimple glowColor="59, 130, 246" className="p-5">
+          <span className="text-sm font-medium text-white/60">Total Shares</span>
+          <div className="flex items-center gap-2 mt-2">
+            <Users className="h-4 w-4 text-blue-400" />
+            <span className="text-2xl font-bold text-white">
+              {((market.totalYesShares + market.totalNoShares) / 1_000_000).toFixed(2)}M
+            </span>
+          </div>
+        </WobbleCardSimple>
 
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Time Remaining
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-muted-foreground" />
-              <span className="text-2xl font-bold">{timeRemaining}</span>
-            </div>
-          </CardContent>
-        </Card>
+        <WobbleCardSimple glowColor="249, 115, 22" className="p-5">
+          <span className="text-sm font-medium text-white/60">Time Remaining</span>
+          <div className="flex items-center gap-2 mt-2">
+            <Clock className="h-4 w-4 text-orange-400" />
+            <span className="text-2xl font-bold text-white">{timeRemaining}</span>
+          </div>
+        </WobbleCardSimple>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

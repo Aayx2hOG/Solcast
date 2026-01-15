@@ -4,6 +4,7 @@ import "./globals.css";
 import { WalletContextProvider } from "@/lib/contexts/WalletContext";
 import { SolanaProvider } from "@/lib/contexts/SolanaContext";
 import { Navbar } from "@/components/layout/Navbar";
+import { GlobalHyperspeed } from "@/components/effects/GlobalHyperspeed";
 import { Toaster } from "sonner";
 
 const geistSans = Geist({
@@ -31,13 +32,16 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
+        {/* Global Hyperspeed Background */}
+        <GlobalHyperspeed />
+        
         <WalletContextProvider>
           <SolanaProvider>
             <Navbar />
-            <main className="flex-1 bg-background">
+            <main className="flex-1 pt-20">
               {children}
             </main>
-            <footer className="border-t border-border/[0.06] bg-background py-8">
+            <footer className="border-t border-border/[0.06] bg-background py-4">
               <div className="container mx-auto px-5">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                   <div className="flex items-center space-x-2">

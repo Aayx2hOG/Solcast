@@ -110,7 +110,7 @@ export default function CreateMarketPage() {
 
   if (!connected) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6">
         <Card className="p-12 text-center max-w-2xl mx-auto">
           <h2 className="text-2xl font-bold mb-2">Connect Your Wallet</h2>
           <p className="text-muted-foreground">
@@ -122,8 +122,8 @@ export default function CreateMarketPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="max-w-3xl mx-auto space-y-8">
+    <div className="container mx-auto px-4 py-6">
+      <div className="max-w-3xl mx-auto space-y-6">
         <div>
           <h1 className="text-4xl font-bold mb-2">Create Market</h1>
           <p className="text-muted-foreground">
