@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken';
 import { prismaClient } from 'db/client';
 import { WebSocketServer, WebSocket } from 'ws';
 import { createServer } from 'http';
+import { FraudDetector } from '../oracle-service/src/ai/fraudDetector';
 
 const app = express();
 const server = createServer(app);
@@ -13,6 +14,9 @@ const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'secret-key';
 
 let dbAvailable = true;
+
+// Initialize fraud detector
+const fraudDetector = new FraudDetector(60 * 60 * 1000); // 1 hour window
 
 const wss = new WebSocketServer({server, path: '/ws'});
 const marketSubs : Map<string, Set<WebSocket>> = new Map();
@@ -328,7 +332,66 @@ app.post('/api/secure/positions', authMiddleware, async (req: Request, res: Resp
 
 app.post('/api/trades', authMiddleware, async (req: Request, res: Response) => {
    const {marketId, amount, type, shares, price, txHash} = req.body;
+   
    try {
+        // Fraud detection check
+        const fraudResult = fraudDetector.recordTrade({
+            userId: req.userId!,
+            marketId,
+            tradeType: type.toUpperCase() as 'BUY' | 'SELL',
+            amount: parseFloat(amount),
+            price: parseFloat(price),
+            timestamp: Date.now(),
+            txHash,
+        });
+
+        if (fraudResult.recommendation === 'BLOCK') {
+            console.warn(`🚨 [FRAUD BLOCKED] User ${req.userId} on market ${marketId}`);
+            console.warn(`   Indicators: ${fraudResult.indicators.map(i => i.type).join(', ')}`);
+            
+            // Save blocked fraud attempt to database
+            if (dbAvailable) {
+                try {
+                    await prismaClient.fraudDetection.create({
+                        data: {
+                            userId: req.userId!,
+                            marketId,
+                            riskScore: fraudResult.overallRiskScore,
+                            recommendation: fraudResult.recommendation,
+                            indicators: fraudResult.indicators.map(i => ({
+                                type: i.type,
+                                severity: i.severity,
+                                score: i.score,
+                                evidence: i.evidence,
+                                suspiciousUsers: i.suspiciousUsers,
+                                affectedMarkets: i.affectedMarkets,
+                            })),
+                        }
+                    });
+                } catch (e) {
+                    console.error('Failed to save fraud detection:', e);
+                }
+            }
+            
+            return res.status(403).json({
+                error: 'Trade blocked due to suspicious activity',
+                fraud: {
+                    score: fraudResult.overallRiskScore,
+                    indicators: fraudResult.indicators.map(i => ({
+                        type: i.type,
+                        severity: i.severity,
+                        evidence: i.evidence,
+                    })),
+                }
+            });
+        }
+
+        if (fraudResult.recommendation === 'FLAG') {
+            console.warn(`⚠️ [FRAUD FLAGGED] User ${req.userId} on market ${marketId}`);
+            console.warn(`   Risk score: ${fraudResult.overallRiskScore.toFixed(3)}`);
+            console.warn(`   Indicators: ${fraudResult.indicators.map(i => `${i.type}(${i.severity})`).join(', ')}`);
+        }
+
         if (!dbAvailable) throw new Error("DB unavailable");
         const trade = await prismaClient.trade.create({
             data: {
@@ -341,6 +404,31 @@ app.post('/api/trades', authMiddleware, async (req: Request, res: Response) => {
                 txHash,
             }
         });
+
+        // Save fraud detection result for this trade
+        if (fraudResult.isSuspicious || fraudResult.recommendation === 'FLAG') {
+            try {
+                await prismaClient.fraudDetection.create({
+                    data: {
+                        tradeId: trade.id,
+                        userId: req.userId!,
+                        marketId,
+                        riskScore: fraudResult.overallRiskScore,
+                        recommendation: fraudResult.recommendation,
+                        indicators: fraudResult.indicators.map(i => ({
+                            type: i.type,
+                            severity: i.severity,
+                            score: i.score,
+                            evidence: i.evidence,
+                            suspiciousUsers: i.suspiciousUsers,
+                            affectedMarkets: i.affectedMarkets,
+                        })),
+                    }
+                });
+            } catch (e) {
+                console.error('Failed to save fraud detection:', e);
+            }
+        }
         const market = await prismaClient.market.findUnique({
             where: {marketId}});
             if (market){
@@ -351,7 +439,18 @@ app.post('/api/trades', authMiddleware, async (req: Request, res: Response) => {
                 });
             }
 
-            res.json({trade: {...trade, amount: trade.amount.toString(), shares: trade.shares.toString(), price: trade.price.toString()}});
+            res.json({
+                trade: {
+                    ...trade,
+                    amount: trade.amount.toString(),
+                    shares: trade.shares.toString(),
+                    price: trade.price.toString()
+                },
+                fraud: {
+                    flagged: fraudResult.recommendation === 'FLAG',
+                    riskScore: fraudResult.overallRiskScore,
+                }
+            });
    }catch(e){
     res.json({
         trade: {
@@ -367,6 +466,160 @@ app.post('/api/trades', authMiddleware, async (req: Request, res: Response) => {
         }
     });
    } 
+});
+
+// ============================================
+// FRAUD DETECTION ANALYTICS ENDPOINTS
+// ============================================
+
+app.get('/api/fraud/alerts', authMiddleware, async (req: Request, res: Response) => {
+    try {
+        const { limit = '50', severity, marketId } = req.query;
+        
+        const where: any = {};
+        if (severity) where.recommendation = severity;
+        if (marketId) where.marketId = marketId;
+        
+        const alerts = await prismaClient.fraudDetection.findMany({
+            where,
+            orderBy: { createdAt: 'desc' },
+            take: parseInt(limit as string),
+            include: {
+                trade: {
+                    select: {
+                        id: true,
+                        type: true,
+                        amount: true,
+                        price: true,
+                        txHash: true,
+                    }
+                }
+            }
+        });
+        
+        res.json({ alerts });
+    } catch (error) {
+        console.error('Error fetching fraud alerts:', error);
+        res.status(500).json({ error: 'Failed to fetch fraud alerts' });
+    }
+});
+
+app.get('/api/fraud/user/:userId', authMiddleware, async (req: Request, res: Response) => {
+    try {
+        const { userId } = req.params;
+        
+        const fraudHistory = await prismaClient.fraudDetection.findMany({
+            where: { userId },
+            orderBy: { createdAt: 'desc' },
+            take: 100,
+        });
+        
+        const stats = {
+            totalFlags: fraudHistory.length,
+            blocked: fraudHistory.filter(f => f.recommendation === 'BLOCK').length,
+            flagged: fraudHistory.filter(f => f.recommendation === 'FLAG').length,
+            avgRiskScore: fraudHistory.reduce((sum, f) => sum + f.riskScore, 0) / fraudHistory.length || 0,
+            recentActivity: fraudHistory.slice(0, 10),
+        };
+        
+        res.json({ stats });
+    } catch (error) {
+        console.error('Error fetching user fraud history:', error);
+        res.status(500).json({ error: 'Failed to fetch user fraud history' });
+    }
+});
+
+app.get('/api/fraud/market/:marketId', async (req: Request, res: Response) => {
+    try {
+        const { marketId } = req.params;
+        
+        const fraudActivity = await prismaClient.fraudDetection.findMany({
+            where: { marketId },
+            orderBy: { createdAt: 'desc' },
+            take: 50,
+        });
+        
+        const stats = {
+            totalIncidents: fraudActivity.length,
+            blocked: fraudActivity.filter(f => f.recommendation === 'BLOCK').length,
+            flagged: fraudActivity.filter(f => f.recommendation === 'FLAG').length,
+            avgRiskScore: fraudActivity.reduce((sum, f) => sum + f.riskScore, 0) / fraudActivity.length || 0,
+            indicatorBreakdown: fraudActivity.reduce((acc: any, f: any) => {
+                const indicators = f.indicators as any[];
+                indicators.forEach((ind: any) => {
+                    acc[ind.type] = (acc[ind.type] || 0) + 1;
+                });
+                return acc;
+            }, {}),
+        };
+        
+        res.json({ stats, recentActivity: fraudActivity.slice(0, 10) });
+    } catch (error) {
+        console.error('Error fetching market fraud activity:', error);
+        res.status(500).json({ error: 'Failed to fetch market fraud activity' });
+    }
+});
+
+// ============================================
+// ANOMALY DETECTION ANALYTICS ENDPOINTS
+// ============================================
+
+app.get('/api/anomaly/alerts', async (req: Request, res: Response) => {
+    try {
+        const { limit = '50', severity, marketId } = req.query;
+        
+        const where: any = { isAnomaly: true };
+        if (severity) where.severity = severity;
+        if (marketId) where.marketId = marketId;
+        
+        const alerts = await prismaClient.anomalyDetection.findMany({
+            where,
+            orderBy: { createdAt: 'desc' },
+            take: parseInt(limit as string),
+        });
+        
+        res.json({ alerts });
+    } catch (error) {
+        console.error('Error fetching anomaly alerts:', error);
+        res.status(500).json({ error: 'Failed to fetch anomaly alerts' });
+    }
+});
+
+app.get('/api/anomaly/market/:marketId', async (req: Request, res: Response) => {
+    try {
+        const { marketId } = req.params;
+        const { hours = '24' } = req.query;
+        
+        const since = new Date(Date.now() - parseInt(hours as string) * 60 * 60 * 1000);
+        
+        const anomalies = await prismaClient.anomalyDetection.findMany({
+            where: {
+                marketId,
+                createdAt: { gte: since },
+            },
+            orderBy: { createdAt: 'desc' },
+        });
+        
+        const stats = {
+            totalDetections: anomalies.length,
+            anomalies: anomalies.filter(a => a.isAnomaly).length,
+            critical: anomalies.filter(a => a.severity === 'critical').length,
+            high: anomalies.filter(a => a.severity === 'high').length,
+            avgScore: anomalies.reduce((sum, a) => sum + a.anomalyScore, 0) / anomalies.length || 0,
+            bySource: anomalies.reduce((acc: any, a) => {
+                if (!acc[a.source]) acc[a.source] = { total: 0, anomalies: 0, avgScore: 0 };
+                acc[a.source].total++;
+                if (a.isAnomaly) acc[a.source].anomalies++;
+                acc[a.source].avgScore = (acc[a.source].avgScore * (acc[a.source].total - 1) + a.anomalyScore) / acc[a.source].total;
+                return acc;
+            }, {}),
+        };
+        
+        res.json({ stats, recentAnomalies: anomalies.slice(0, 20) });
+    } catch (error) {
+        console.error('Error fetching market anomaly data:', error);
+        res.status(500).json({ error: 'Failed to fetch market anomaly data' });
+    }
 });
 
 app.get('/api/markets/:id/trades', authMiddleware, async (req: Request, res: Response) => {

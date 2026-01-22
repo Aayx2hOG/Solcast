@@ -4,6 +4,15 @@ import { OracleData } from "../models/OracleData";
 import { ResolutionDecision } from "./types";
 import { AnomalyDetector } from "../ai/anomalyDetector";
 
+// Import prisma client - will work when DB is available
+let prismaClient: any = null;
+try {
+  const dbModule = require('db');
+  prismaClient = dbModule.prismaClient;
+} catch (e) {
+  console.log('[resolveMarket] Database not available - anomaly persistence disabled');
+}
+
 // Initialize global anomaly detector
 const anomalyDetector = new AnomalyDetector({
   stdDevThreshold: 3,
@@ -85,6 +94,31 @@ export async function resolveMarket(
             `[ANOMALY] ${marketId} ${data.source}: severity=${anomalyResult.score.severity}, score=${anomalyResult.score.value.toFixed(3)}`
           );
           console.debug(`  Reasons: ${anomalyResult.score.reasons.join(", ")}`);
+        }
+
+        // Save anomaly detection result to database
+        if (prismaClient && (anomalyResult.isAnomaly || anomalyResult.score.value > 0.3)) {
+          try {
+            await prismaClient.anomalyDetection.create({
+              data: {
+                marketId,
+                source: data.source,
+                value: data.value,
+                anomalyScore: anomalyResult.score.value,
+                severity: anomalyResult.score.severity,
+                reasons: anomalyResult.score.reasons,
+                isAnomaly: anomalyResult.isAnomaly,
+                metadata: {
+                  dataCount: anomalyResult.metadata.dataCount,
+                  mean: anomalyResult.metadata.mean,
+                  stdDev: anomalyResult.metadata.stdDev,
+                  zScore: anomalyResult.metadata.zScore,
+                },
+              }
+            });
+          } catch (e) {
+            console.error('Failed to save anomaly detection:', e);
+          }
         }
 
         // Add data point to detector history
