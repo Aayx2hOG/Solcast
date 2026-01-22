@@ -87,8 +87,45 @@ model Trade {
   txHash    String   @unique
   createdAt DateTime @default(now())
 
-  user   User   @relation(fields: [userId], references: [id])
-  market Market @relation(fields: [marketId], references: [id])
+  user           User             @relation(fields: [userId], references: [id])
+  market         Market           @relation(fields: [marketId], references: [id])
+  fraudDetection FraudDetection?
+}
+
+model FraudDetection {
+  id             String   @id @default(uuid())
+  tradeId        String?  @unique
+  userId         String
+  marketId       String
+  riskScore      Float
+  recommendation String   // ALLOW, FLAG, BLOCK
+  indicators     Json     // Array of fraud indicators with type, severity, score, evidence
+  createdAt      DateTime @default(now())
+
+  trade Trade? @relation(fields: [tradeId], references: [id])
+
+  @@index([userId])
+  @@index([marketId])
+  @@index([recommendation])
+  @@index([createdAt])
+}
+
+model AnomalyDetection {
+  id           String   @id @default(uuid())
+  marketId     String
+  source       String
+  value        Float
+  anomalyScore Float
+  severity     String   // low, medium, high, critical
+  reasons      Json     // Array of reason strings
+  isAnomaly    Boolean
+  metadata     Json?    // Additional metadata (mean, stdDev, zScore, etc)
+  createdAt    DateTime @default(now())
+
+  @@index([marketId])
+  @@index([source])
+  @@index([severity])
+  @@index([createdAt])
 }
 
 enum MarketCategory {
