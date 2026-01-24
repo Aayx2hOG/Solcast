@@ -309,4 +309,3 @@ export class FraudDetector {
   }
 }
 
-export default FraudDetector;
