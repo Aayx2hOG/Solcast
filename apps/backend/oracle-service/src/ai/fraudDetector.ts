@@ -4,59 +4,43 @@ import {
   FraudIndicator,
   FraudDetectionResult,
   MarketSnapshot,
-} from './fraudDetection.types';
+} from '../types';
 
 export class FraudDetector {
-  private tradeHistory: Map<string, TradeEvent[]> = new Map(); // marketId -> trades
-  private userPatterns: Map<string, UserTradePattern> = new Map(); // userId -> pattern
-  private marketSnapshots: Map<string, MarketSnapshot[]> = new Map(); // marketId -> snapshots
-  private timeWindow: number; // ms to look back for patterns
+  private tradeHistory: Map<string, TradeEvent[]> = new Map();
+  private userPatterns: Map<string, UserTradePattern> = new Map();
+  private marketSnapshots: Map<string, MarketSnapshot[]> = new Map();
+  private timeWindow: number;
 
   constructor(timeWindow: number = 60 * 60 * 1000) {
-    // 1 hour default
     this.timeWindow = timeWindow;
   }
 
-  /**
-   * Record a trade for analysis
-   */
   recordTrade(trade: TradeEvent): FraudDetectionResult {
-    // Add to history
     if (!this.tradeHistory.has(trade.marketId)) {
       this.tradeHistory.set(trade.marketId, []);
     }
     this.tradeHistory.get(trade.marketId)!.push(trade);
-
-    // Update user pattern
     this.updateUserPattern(trade);
-
-    // Clean old data
     this.cleanOldData();
-
-    // Run fraud detection
     return this.detect(trade);
   }
 
   private detect(recentTrade: TradeEvent): FraudDetectionResult {
     const indicators: FraudIndicator[] = [];
 
-    // 1. Wash Trading Detection
     const washIndicator = this.detectWashTrading(recentTrade);
     if (washIndicator) indicators.push(washIndicator);
 
-    // 2. Pump & Dump Detection
     const pumpDumpIndicator = this.detectPumpDump(recentTrade);
     if (pumpDumpIndicator) indicators.push(pumpDumpIndicator);
 
-    // 3. Coordinated Trading Detection
     const coordinatedIndicator = this.detectCoordinatedTrades(recentTrade);
     if (coordinatedIndicator) indicators.push(coordinatedIndicator);
 
-    // 4. Suspicious Timing Detection
     const timingIndicator = this.detectSuspiciousTiming(recentTrade);
     if (timingIndicator) indicators.push(timingIndicator);
 
-    // Calculate overall risk
     const overallRiskScore =
       indicators.length > 0
         ? indicators.reduce((sum, ind) => sum + ind.score, 0) / indicators.length
@@ -74,22 +58,17 @@ export class FraudDetector {
     };
   }
 
-  /**
-   * Detect wash trading: user buying and immediately selling
-   */
   private detectWashTrading(trade: TradeEvent): FraudIndicator | null {
-    const recentTrades = this.getRecentTrades(trade.marketId, 5 * 60 * 1000); // 5 min window
+    const recentTrades = this.getRecentTrades(trade.marketId, 5 * 60 * 1000);
     const userTrades = recentTrades.filter(
       (t) => t.userId === trade.userId && t.marketId === trade.marketId
     );
 
     if (userTrades.length < 3) return null;
 
-    // Count buy/sell pairs
     const buys = userTrades.filter((t) => t.tradeType === 'BUY');
     const sells = userTrades.filter((t) => t.tradeType === 'SELL');
 
-    // Check if volumes nearly cancel out (wash pattern)
     const buyVolume = buys.reduce((sum, t) => sum + t.amount, 0);
     const sellVolume = sells.reduce((sum, t) => sum + t.amount, 0);
     const netPosition = buyVolume - sellVolume;
@@ -97,10 +76,9 @@ export class FraudDetector {
 
     if (totalVolume === 0) return null;
 
-    const washRatio = Math.abs(netPosition) / totalVolume; // Close to 0 = wash
-    if (washRatio > 0.2) return null; // Net position too large
+    const washRatio = Math.abs(netPosition) / totalVolume;
+    if (washRatio > 0.2) return null;
 
-    // High wash trading score
     const score = 1 - washRatio;
 
     return {
@@ -121,8 +99,7 @@ export class FraudDetector {
 
     if (recentTrades.length < 5) return null;
 
-    // Group trades into buckets
-    const bucketSize = Math.floor(this.timeWindow / 5); // 5 buckets
+    const bucketSize = Math.floor(this.timeWindow / 5);
     const buckets: TradeEvent[][] = Array(5)
       .fill(null)
       .map(() => []);
@@ -136,7 +113,6 @@ export class FraudDetector {
       }
     }
 
-    // Check for price spike then volume spike
     const prices = buckets
       .map((b) =>
         b.length > 0 ? b.reduce((sum, t) => sum + t.price, 0) / b.length : null
@@ -172,18 +148,11 @@ export class FraudDetector {
     };
   }
 
-  /**
-   * Detect coordinated trades: multiple users trading same direction in short time
-   */
   private detectCoordinatedTrades(trade: TradeEvent): FraudIndicator | null {
-    const recentTrades = this.getRecentTrades(
-      trade.marketId,
-      2 * 60 * 1000
-    ); // 2 min window
+    const recentTrades = this.getRecentTrades(trade.marketId, 2 * 60 * 1000);
 
     if (recentTrades.length < 5) return null;
 
-    // Group by direction
     const buys = recentTrades.filter((t) => t.tradeType === 'BUY');
     const sells = recentTrades.filter((t) => t.tradeType === 'SELL');
 
@@ -191,12 +160,11 @@ export class FraudDetector {
     const trades = direction === 'BUY' ? buys : sells;
 
     const uniqueUsers = new Set(trades.map((t) => t.userId)).size;
-    const coordinationScore = uniqueUsers > 0 ? trades.length / uniqueUsers : 0; // Avg trades per user
+    const coordinationScore = uniqueUsers > 0 ? trades.length / uniqueUsers : 0;
 
-    // If many users all trading same direction rapidly = suspicious
     if (uniqueUsers < 3 || coordinationScore < 1.5) return null;
 
-    const score = Math.min(coordinationScore / 5, 1); // Normalized
+    const score = Math.min(coordinationScore / 5, 1);
 
     return {
       type: 'COORDINATED_TRADES',
@@ -206,24 +174,14 @@ export class FraudDetector {
         `${uniqueUsers} users made ${trades.length} ${direction} trades in 2 min`,
         `${coordinationScore.toFixed(2)} trades per user (suspicious if >1.5)`,
       ],
-      suspiciousUsers: Array.from(
-        new Set(trades.map((t) => t.userId))
-      ),
+      suspiciousUsers: Array.from(new Set(trades.map((t) => t.userId))),
       affectedMarkets: [trade.marketId],
     };
   }
 
-  /**
-   * Detect suspicious timing: trades at resolution time or market closing
-   */
   private detectSuspiciousTiming(trade: TradeEvent): FraudIndicator | null {
-    // Placeholder: would integrate with market schedules
-    // For now, flag trades in specific market windows
     const evidence: string[] = [];
     let score = 0;
-
-    // Flag if trade happens right before/after market events
-    // This would connect to resolution schedule in real implementation
 
     if (score === 0) return null;
 
@@ -236,18 +194,12 @@ export class FraudDetector {
     };
   }
 
-  /**
-   * Get recent trades for a market
-   */
   private getRecentTrades(marketId: string, timeWindow: number): TradeEvent[] {
     const trades = this.tradeHistory.get(marketId) || [];
     const cutoff = Date.now() - timeWindow;
     return trades.filter((t) => t.timestamp > cutoff);
   }
 
-  /**
-   * Update user trading pattern
-   */
   private updateUserPattern(trade: TradeEvent): void {
     if (!this.userPatterns.has(trade.userId)) {
       this.userPatterns.set(trade.userId, {
@@ -277,9 +229,6 @@ export class FraudDetector {
     pattern.lastTradeTime = trade.timestamp;
   }
 
-  /**
-   * Clean old data outside time window
-   */
   private cleanOldData(): void {
     const cutoff = Date.now() - this.timeWindow * 2;
 
@@ -293,19 +242,11 @@ export class FraudDetector {
     }
   }
 
-  /**
-   * Get statistics for a user
-   */
   getUserStats(userId: string): UserTradePattern | null {
     return this.userPatterns.get(userId) || null;
   }
 
-  /**
-   * Get all users flagged
-   */
   getFlaggedUsers(threshold: number = 0.6): Map<string, UserTradePattern> {
-    // Would track flagged users separately in production
     return this.userPatterns;
   }
 }
-

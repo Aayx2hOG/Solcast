@@ -9,6 +9,11 @@ import { TradeSchema, validateRequest } from '../utils/validation';
 
 export const tradesRouter = Router();
 
+/**
+ * POST /api/trades
+ * Execute a trade with fraud detection and anomaly checking
+ * @requires Authentication
+ */
 tradesRouter.post('/', authMiddleware, async (req: Request, res: Response) => {
     const validation = validateRequest(TradeSchema, req.body);
     
@@ -36,8 +41,7 @@ tradesRouter.post('/', authMiddleware, async (req: Request, res: Response) => {
         });
 
         if (fraudResult.recommendation === 'BLOCK') {
-            console.warn(`[FRAUD BLOCKED] User ${req.userId} on market ${marketId}`);
-            console.warn(`Indicators: ${fraudResult.indicators.map(i => i.type).join(', ')}`);
+            console.warn(`[FRAUD BLOCKED] user=${req.userId} market=${marketId} indicators=${fraudResult.indicators.map(i => i.type).join(',')}`);
 
             if (dbAvailable) {
                 try {
@@ -76,16 +80,13 @@ tradesRouter.post('/', authMiddleware, async (req: Request, res: Response) => {
         }
 
         if (fraudResult.recommendation === 'FLAG') {
-            console.warn(`[FRAUD FLAGGED] User ${req.userId} on market ${marketId}`);
-            console.warn(`Risk score: ${fraudResult.overallRiskScore.toFixed(3)}`);
-            console.warn(`Indicators: ${fraudResult.indicators.map(i => `${i.type}(${i.severity})`).join(', ')}`);
+            console.warn(`[FRAUD FLAGGED] user=${req.userId} market=${marketId} score=${fraudResult.overallRiskScore.toFixed(3)}`);
         }
 
         const anomalyResult = detectAnomaly(marketId, price);
 
         if (anomalyResult.isAnomaly && anomalyResult.score.severity === 'critical') {
-            console.warn(`critical anomaly market ${marketId}: score=${anomalyResult.score.value}`);
-            console.warn(`Indicators: ${anomalyResult.score.reasons.join(', ')}`);
+            console.warn(`[ANOMALY] market=${marketId} score=${anomalyResult.score.value.toFixed(3)} severity=critical`);
 
             if (anomalyResult.score.value > 0.9) {
                 return res.status(403).json({

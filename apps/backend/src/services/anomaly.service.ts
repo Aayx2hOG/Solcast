@@ -1,5 +1,5 @@
 import { AnomalyDetector } from '../../oracle-service/src/ai/anomalyDetector';
-import type { AnomalyResult } from '../../oracle-service/src/ai/types';
+import type { AnomalyResult } from '../../oracle-service/src/ai';
 
 const anomalyDetector = new AnomalyDetector({
     stdDevThreshold: 3,

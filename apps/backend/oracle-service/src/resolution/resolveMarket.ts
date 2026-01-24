@@ -1,7 +1,7 @@
 import { FETCHERS, MarketType } from "./fetcherRegistry";
 import { validate } from "../validation/validator";
 import { OracleData } from "../models/OracleData";
-import { ResolutionDecision } from "./types";
+import { ResolutionDecision } from "../types";
 import { AnomalyDetector } from "../ai/anomalyDetector";
 
 // Import prisma client - will work when DB is available

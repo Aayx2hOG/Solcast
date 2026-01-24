@@ -1,5 +1,5 @@
 import { OracleData } from "../models/OracleData";
-import { ValidationResult } from "./types";
+import { ValidationResult } from "../types";
 
 export function validate(
   inputs: OracleData[],

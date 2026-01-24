@@ -2,7 +2,7 @@ import {
   AnomalyDetectionConfig,
   AnomalyResult,
   DataPoint,
-} from './types';
+} from '../types';
 
 export class AnomalyDetector {
   private config: AnomalyDetectionConfig;

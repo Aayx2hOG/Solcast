@@ -1,5 +1,5 @@
 import { FraudDetector } from '../../oracle-service/src/ai/fraudDetector';
-import type { TradeEvent, FraudDetectionResult } from '../../oracle-service/src/ai/fraudDetection.types';
+import type { TradeEvent, FraudDetectionResult } from '../../oracle-service/src/ai';
 
 const fraudDetector = new FraudDetector(60 * 60 * 1000);
 
