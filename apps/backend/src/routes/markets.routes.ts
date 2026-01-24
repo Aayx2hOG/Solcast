@@ -3,6 +3,7 @@ import { prismaClient } from 'db/client';
 import { authMiddleware } from '../middleware';
 import { dbAvailable, setDbAvailable } from '../utils/config';
 import { mockMarkets } from '../utils/mockData';
+import { CreateMarketSchema, validateRequest } from '../utils/validation';
 
 export const marketsRouter = Router();
 
@@ -44,13 +45,26 @@ marketsRouter.get('/:id', async (req: Request, res: Response) => {
 });
 
 marketsRouter.post('/', authMiddleware, async (req: Request, res: Response) => {
-    const { question, description, category, endTimestamp, resolutionTimestamp, oracleSource, marketId } = req.body;
+    const validation = validateRequest(CreateMarketSchema, req.body);
+    
+    if (!validation.success) {
+        return res.status(400).json({
+            error: 'Validation failed',
+            details: validation.errors.map(e => ({
+                field: e.path.join('.'),
+                message: e.message,
+            })),
+        });
+    }
+
+    const { question, description, category, endTimestamp, resolutionTimestamp, oracleSource, marketId } = validation.data;
+    const finalMarketId = marketId || `market-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
     try {
         if (!dbAvailable) throw new Error("DB unavailable");
         const market = await prismaClient.market.create({
             data: {
-                marketId,
+                marketId: finalMarketId,
                 question,
                 description,
                 category,

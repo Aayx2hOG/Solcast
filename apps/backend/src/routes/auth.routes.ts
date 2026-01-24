@@ -3,14 +3,24 @@ import jwt from 'jsonwebtoken';
 import { prismaClient } from 'db/client';
 import { config, dbAvailable, setDbAvailable } from '../utils/config';
 import { mockUsers } from '../utils/mockData';
+import { LoginSchema, validateRequest } from '../utils/validation';
 
 export const authRouter = Router();
 
 authRouter.post('/login', async (req: Request, res: Response) => {
-    const { walletAddress } = req.body;
-    if (!walletAddress) {
-        return res.status(400).json({ message: "Wallet address is required" });
+    const validation = validateRequest(LoginSchema, req.body);
+    
+    if (!validation.success) {
+        return res.status(400).json({
+            error: 'Validation failed',
+            details: validation.errors.map(e => ({
+                field: e.path.join('.'),
+                message: e.message,
+            })),
+        });
     }
+
+    const { walletAddress } = validation.data;
     
     try {
         if (!dbAvailable) throw new Error("DB unavailable");

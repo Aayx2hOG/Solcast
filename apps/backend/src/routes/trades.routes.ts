@@ -5,19 +5,32 @@ import { dbAvailable } from '../utils/config';
 import { recordTrade } from '../services/fraud.service';
 import { detectAnomaly } from '../services/anomaly.service';
 import { broadcastPrice } from '../utils/websocket';
+import { TradeSchema, validateRequest } from '../utils/validation';
 
 export const tradesRouter = Router();
 
 tradesRouter.post('/', authMiddleware, async (req: Request, res: Response) => {
-    const { marketId, amount, type, shares, price, txHash } = req.body;
+    const validation = validateRequest(TradeSchema, req.body);
+    
+    if (!validation.success) {
+        return res.status(400).json({
+            error: 'Validation failed',
+            details: validation.errors.map(e => ({
+                field: e.path.join('.'),
+                message: e.message,
+            })),
+        });
+    }
+
+    const { marketId, amount, type, shares, price, txHash } = validation.data;
 
     try {
         const fraudResult = recordTrade({
             userId: req.userId!,
             marketId,
-            tradeType: type.toUpperCase() as 'BUY' | 'SELL',
-            amount: parseFloat(amount),
-            price: parseFloat(price),
+            tradeType: type as 'BUY' | 'SELL',
+            amount,
+            price,
             timestamp: Date.now(),
             txHash,
         });
@@ -68,8 +81,7 @@ tradesRouter.post('/', authMiddleware, async (req: Request, res: Response) => {
             console.warn(`Indicators: ${fraudResult.indicators.map(i => `${i.type}(${i.severity})`).join(', ')}`);
         }
 
-        const priceValue = parseFloat(price);
-        const anomalyResult = detectAnomaly(marketId, priceValue);
+        const anomalyResult = detectAnomaly(marketId, price);
 
         if (anomalyResult.isAnomaly && anomalyResult.score.severity === 'critical') {
             console.warn(`critical anomaly market ${marketId}: score=${anomalyResult.score.value}`);
@@ -93,10 +105,10 @@ tradesRouter.post('/', authMiddleware, async (req: Request, res: Response) => {
                 marketId,
                 userId: req.userId!,
                 type,
-                amount: BigInt(amount),
-                shares: BigInt(shares),
-                price: BigInt(price),
-                txHash,
+                amount: BigInt(Math.round(amount)),
+                shares: BigInt(Math.round(shares)),
+                price: BigInt(Math.round(price * 1000000)), // Store as micro-units
+                txHash: txHash || `temp-${Date.now()}`,
             }
         });
 
