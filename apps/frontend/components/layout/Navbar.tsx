@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
 import { 
-  TrendingUp, 
   Search, 
   Briefcase, 
   PlusCircle, 
@@ -22,6 +21,7 @@ import {
   MobileNavHeader,
   MobileNavToggle,
   MobileNavMenu,
+  NavbarWalletWrapper,
 } from "@/components/ui/resizable-navbar";
 import { cn } from "@/lib/utils";
 
@@ -32,7 +32,6 @@ const WalletMultiButton = dynamic(
 );
 
 const navigation = [
-  { name: "Markets", link: "/", icon: <TrendingUp className="h-4 w-4" /> },
   { name: "Explorer", link: "/explorer", icon: <Search className="h-4 w-4" /> },
   { name: "Portfolio", link: "/portfolio", icon: <Briefcase className="h-4 w-4" /> },
   { name: "Create", link: "/create", icon: <PlusCircle className="h-4 w-4" /> },
@@ -51,8 +50,10 @@ export function Navbar() {
         <NavBody>
           <NavbarLogo />
           <NavItems items={navigation} />
-          <div className="flex items-center gap-2">
-            <WalletMultiButton />
+          <div className="flex items-center gap-3">
+            <NavbarWalletWrapper>
+              <WalletMultiButton />
+            </NavbarWalletWrapper>
           </div>
         </NavBody>
 

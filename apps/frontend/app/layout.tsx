@@ -4,7 +4,8 @@ import "./globals.css";
 import { WalletContextProvider } from "@/lib/contexts/WalletContext";
 import { SolanaProvider } from "@/lib/contexts/SolanaContext";
 import { Navbar } from "@/components/layout/Navbar";
-import { GlobalHyperspeed } from "@/components/effects/GlobalHyperspeed";
+import { BottomNav } from "@/components/layout/BottomNav";
+import { GlobalProviders } from "@/components/providers/GlobalProviders";
 import { Toaster } from "sonner";
 
 const geistSans = Geist({
@@ -32,16 +33,15 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        {/* Global Hyperspeed Background */}
-        <GlobalHyperspeed />
-        
         <WalletContextProvider>
           <SolanaProvider>
-            <Navbar />
-            <main className="flex-1 pt-20">
-              {children}
-            </main>
-            <footer className="border-t border-border/[0.06] bg-background py-4">
+            <GlobalProviders>
+              <Navbar />
+              <main className="flex-1 pt-16 pb-20 md:pb-0">
+                {children}
+              </main>
+              <BottomNav />
+              <footer className="hidden md:block border-t border-border/[0.06] bg-background py-4">
               <div className="container mx-auto px-5">
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                   <div className="flex items-center space-x-2">
@@ -68,8 +68,9 @@ export default function RootLayout({
                   </div>
                 </div>
               </div>
-            </footer>
-            <Toaster richColors position="top-right" />
+              </footer>
+              <Toaster richColors position="top-right" />
+            </GlobalProviders>
           </SolanaProvider>
         </WalletContextProvider>
       </body>

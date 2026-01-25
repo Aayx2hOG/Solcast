@@ -73,27 +73,44 @@ export const SolanaProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       // Try to fetch from backend API first
       const apiResult = await api.getMarkets();
       if (apiResult.data?.markets && apiResult.data.markets.length > 0) {
-        const formattedMarkets: Market[] = apiResult.data.markets.map((m: any) => ({
-          publicKey: new PublicKey(m.marketId || PROGRAM_ID),
-          marketId: parseInt(m.marketId) || 0,
-          authority: m.creator?.walletAddress ? new PublicKey(m.creator.walletAddress) : new PublicKey(PROGRAM_ID),
-          question: m.question,
-          description: m.description,
-          category: m.category,
-          createdAt: new Date(m.createdAt),
-          endTimestamp: new Date(m.endTimestamp),
-          resolutionTimestamp: new Date(m.resolutionTimestamp),
-          oracleSource: m.oracleSource || "",
-          status: m.status || "Active",
-          yesLiquidity: m.yesLiquidity || 0,
-          noLiquidity: m.noLiquidity || 0,
-          totalYesShares: m.totalYesShares || 0,
-          totalNoShares: m.totalNoShares || 0,
-          totalVolume: m.totalVolume || 0,
-          winningOutcome: m.winningOutcome,
-          yesPrice: m.yesPrice || 0.5,
-          noPrice: m.noPrice || 0.5,
-        }));
+        const formattedMarkets: Market[] = apiResult.data.markets.map((m: any) => {
+          // Try to get a valid public key - use the publicKey field if it exists and is valid base58
+          let pubKey: PublicKey;
+          try {
+            pubKey = m.publicKey ? new PublicKey(m.publicKey) : new PublicKey(PROGRAM_ID);
+          } catch {
+            pubKey = new PublicKey(PROGRAM_ID);
+          }
+          
+          let authorityKey: PublicKey;
+          try {
+            authorityKey = m.creator?.walletAddress ? new PublicKey(m.creator.walletAddress) : new PublicKey(PROGRAM_ID);
+          } catch {
+            authorityKey = new PublicKey(PROGRAM_ID);
+          }
+
+          return {
+            publicKey: pubKey,
+            marketId: parseInt(m.marketId) || m.id || 0,
+            authority: authorityKey,
+            question: m.question,
+            description: m.description,
+            category: m.category,
+            createdAt: new Date(m.createdAt),
+            endTimestamp: new Date(m.endTimestamp),
+            resolutionTimestamp: new Date(m.resolutionTimestamp),
+            oracleSource: m.oracleSource || "",
+            status: m.status || "Active",
+            yesLiquidity: m.yesLiquidity || 0,
+            noLiquidity: m.noLiquidity || 0,
+            totalYesShares: m.totalYesShares || 0,
+            totalNoShares: m.totalNoShares || 0,
+            totalVolume: m.totalVolume || 0,
+            winningOutcome: m.winningOutcome,
+            yesPrice: m.yesPrice || 0.5,
+            noPrice: m.noPrice || 0.5,
+          };
+        });
         setMarkets(formattedMarkets);
         setError(null);
         return;
@@ -101,7 +118,7 @@ export const SolanaProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       // Fallback to blockchain if API returns empty
       if (program) {
-        const marketAccounts = await program.account.market.all();
+        const marketAccounts = await (program.account as any).market.all();
         const formattedMarkets: Market[] = marketAccounts.map((account: any) => {
           const data = account.account;
           const totalLiquidity = data.yesLiquidity + data.noLiquidity;
@@ -163,7 +180,7 @@ export const SolanaProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       // Fallback to blockchain
       if (program) {
-        const positionAccounts = await program.account.userPosition.all([
+        const positionAccounts = await (program.account as any).userPosition.all([
           {
             memcmp: {
               offset: 8,

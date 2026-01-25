@@ -1,6 +1,6 @@
 "use client";
 import { cn } from "@/lib/utils";
-import { Menu, X } from "lucide-react";
+import { Menu, X, Wallet } from "lucide-react";
 import {
   motion,
   AnimatePresence,
@@ -15,6 +15,9 @@ interface NavbarContextType {
 }
 
 const NavbarContext = createContext<NavbarContextType>({ isScrolled: false });
+
+// Export the hook to use the context
+export const useNavbarScroll = () => useContext(NavbarContext);
 
 interface NavbarProps {
   children: React.ReactNode;
@@ -82,6 +85,8 @@ interface NavItemsProps {
 }
 
 export const NavItems = ({ items, className }: NavItemsProps) => {
+  const { isScrolled } = useContext(NavbarContext);
+
   return (
     <div className={cn("flex items-center gap-1", className)}>
       {items.map((item, idx) => (
@@ -89,15 +94,26 @@ export const NavItems = ({ items, className }: NavItemsProps) => {
           key={`nav-item-${idx}`}
           href={item.link}
           className={cn(
-            "relative px-3 py-2 text-sm font-medium",
+            "relative py-2 text-sm font-medium",
             "text-neutral-400 hover:text-white",
             "rounded-full hover:bg-white/[0.05]",
-            "transition-colors duration-200",
-            "flex items-center gap-1.5"
+            "transition-all duration-200",
+            "flex items-center gap-1.5",
+            isScrolled ? "px-2" : "px-3"
           )}
+          title={item.name}
         >
-          {item.icon && <span className="h-4 w-4">{item.icon}</span>}
-          <span>{item.name}</span>
+          {item.icon && <span className="h-4 w-4 flex-shrink-0">{item.icon}</span>}
+          <motion.span
+            animate={{
+              width: isScrolled ? 0 : "auto",
+              opacity: isScrolled ? 0 : 1,
+            }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden whitespace-nowrap"
+          >
+            {item.name}
+          </motion.span>
         </Link>
       ))}
     </div>
@@ -109,6 +125,8 @@ interface NavbarLogoProps {
 }
 
 export const NavbarLogo = ({ className }: NavbarLogoProps) => {
+  const { isScrolled } = useContext(NavbarContext);
+
   return (
     <Link
       href="/"
@@ -118,7 +136,7 @@ export const NavbarLogo = ({ className }: NavbarLogoProps) => {
         className
       )}
     >
-      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-cyan-500">
+      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex-shrink-0">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
@@ -133,7 +151,16 @@ export const NavbarLogo = ({ className }: NavbarLogoProps) => {
           <polyline points="16 7 22 7 22 13" />
         </svg>
       </div>
-      <span className="text-sm font-semibold text-white">Solcast</span>
+      <motion.span
+        animate={{
+          width: isScrolled ? 0 : "auto",
+          opacity: isScrolled ? 0 : 1,
+        }}
+        transition={{ duration: 0.2 }}
+        className="text-sm font-semibold text-white overflow-hidden whitespace-nowrap"
+      >
+        Solcast
+      </motion.span>
     </Link>
   );
 };
@@ -279,5 +306,32 @@ export const MobileNavMenu = ({
         </>
       )}
     </AnimatePresence>
+  );
+};
+
+// Compact wallet button wrapper for scrolled state
+interface NavbarWalletWrapperProps {
+  children: React.ReactNode;
+  className?: string;
+}
+
+export const NavbarWalletWrapper = ({ children, className }: NavbarWalletWrapperProps) => {
+  const { isScrolled } = useContext(NavbarContext);
+  
+  return (
+    <motion.div
+      initial={false}
+      animate={{
+        scale: isScrolled ? 0.9 : 1,
+      }}
+      transition={{ duration: 0.2 }}
+      className={cn(
+        "flex items-center",
+        isScrolled && "wallet-compact",
+        className
+      )}
+    >
+      {children}
+    </motion.div>
   );
 };
