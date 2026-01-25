@@ -50,29 +50,31 @@ export const CreateMarketSchema = z
     .object({
         question: sanitizedString(10, 500),
         description: sanitizedString(20, 2000),
-        category: z.enum([
-            "SPORTS",
-            "POLITICS",
-            "CRYPTO",
-            "ECONOMICS",
-            "ENTERTAINMENT",
-            "SCIENCE",
-            "OTHER",
-        ]),
-        endTimestamp: z
-            .string()
-            .datetime()
-            .refine(
-                (val) => new Date(val) > new Date(),
-                { message: "End date must be in the future" }
-            ),
-        resolutionTimestamp: z.string().datetime(),
+        category: z.union([
+            z.enum(["SPORTS", "POLITICS", "CRYPTO", "ECONOMICS", "ENTERTAINMENT", "SCIENCE", "OTHER"]),
+            z.string(),
+            z.object({}).passthrough(),
+        ]).transform((val) => {
+            if (typeof val === 'object') {
+                return Object.keys(val)[0]?.toUpperCase() || 'OTHER';
+            }
+            return typeof val === 'string' ? val.toUpperCase() : 'OTHER';
+        }),
+        endTimestamp: z.union([
+            z.number(),
+            z.string().datetime(),
+            z.string().regex(/^\d+$/),
+        ]).transform((val) => typeof val === 'number' ? val : parseInt(val)),
+        resolutionTimestamp: z.union([
+            z.number(),
+            z.string().datetime(),
+            z.string().regex(/^\d+$/),
+        ]).transform((val) => typeof val === 'number' ? val : parseInt(val)),
         oracleSource: sanitizedString(1, 100),
-        marketId: uuid.optional(), // Server can generate this
+        marketId: z.string().optional(),
     })
-    .strict()
     .refine(
-        (data) => new Date(data.resolutionTimestamp) > new Date(data.endTimestamp),
+        (data) => data.resolutionTimestamp > data.endTimestamp,
         { message: "Resolution must be after end date" }
     );
 

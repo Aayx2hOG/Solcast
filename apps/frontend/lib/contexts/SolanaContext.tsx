@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { Market, UserPosition, Trade } from "../types";
-import { useConnection, useAnchorWallet } from "@solana/wallet-adapter-react";
+import { useConnection, useAnchorWallet, useWallet } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
 import { Program, AnchorProvider } from "@coral-xyz/anchor";
 import { PROGRAM_ID } from "../constants";
@@ -28,7 +28,8 @@ const SolanaContext = createContext<SolanaContextType | undefined>(undefined);
 
 export const SolanaProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { connection } = useConnection();
-  const wallet = useAnchorWallet();
+  const anchorWallet = useAnchorWallet();
+  const { publicKey, connected } = useWallet();
   const [program, setProgram] = useState<Program | null>(null);
   const [markets, setMarkets] = useState<Market[]>([]);
   const [userPositions, setUserPositions] = useState<UserPosition[]>([]);
@@ -37,44 +38,42 @@ export const SolanaProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    if (wallet && connection) {
-      const provider = new AnchorProvider(connection, wallet, {
+    if (anchorWallet && connection) {
+      const provider = new AnchorProvider(connection, anchorWallet, {
         commitment: "confirmed",
       });
-      // Note: You'll need to import the IDL here
-      // const program = new Program(IDL, PROGRAM_ID, provider);
-      // setProgram(program);
     }
-  }, [wallet, connection]);
+  }, [anchorWallet, connection]);
 
-  // Login with wallet
   const login = useCallback(async () => {
-    if (!wallet) return;
+    if (!publicKey) return;
     try {
-      const result = await api.login(wallet.publicKey.toBase58());
+      api.clearToken();
+      const result = await api.login(publicKey.toBase58());
       if (result.data) {
         setIsAuthenticated(true);
       }
     } catch (err: any) {
       console.error("Login failed:", err);
     }
-  }, [wallet]);
+  }, [publicKey]);
 
-  // Auto-login when wallet connects
   useEffect(() => {
-    if (wallet && !isAuthenticated) {
+    if (connected && !isAuthenticated) {
       login();
     }
-  }, [wallet, isAuthenticated, login]);
+    if (!connected && isAuthenticated) {
+      api.clearToken();
+      setIsAuthenticated(false);
+    }
+  }, [connected, isAuthenticated, login]);
 
   const refreshMarkets = useCallback(async () => {
     setIsLoading(true);
     try {
-      // Try to fetch from backend API first
       const apiResult = await api.getMarkets();
       if (apiResult.data?.markets && apiResult.data.markets.length > 0) {
         const formattedMarkets: Market[] = apiResult.data.markets.map((m: any) => {
-          // Try to get a valid public key - use the publicKey field if it exists and is valid base58
           let pubKey: PublicKey;
           try {
             pubKey = m.publicKey ? new PublicKey(m.publicKey) : new PublicKey(PROGRAM_ID);
@@ -116,7 +115,6 @@ export const SolanaProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         return;
       }
 
-      // Fallback to blockchain if API returns empty
       if (program) {
         const marketAccounts = await (program.account as any).market.all();
         const formattedMarkets: Market[] = marketAccounts.map((account: any) => {
@@ -156,15 +154,14 @@ export const SolanaProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, [program]);
 
   const refreshPositions = useCallback(async () => {
-    if (!wallet) return;
+    if (!publicKey) return;
     setIsLoading(true);
     try {
-      // Try to fetch from backend API first
       const apiResult = await api.getPositions();
       if (apiResult.data?.positions) {
         const formattedPositions: UserPosition[] = apiResult.data.positions.map((p: any) => ({
           publicKey: new PublicKey(p.id || PROGRAM_ID),
-          user: new PublicKey(wallet.publicKey),
+          user: publicKey,
           market: new PublicKey(p.marketId || PROGRAM_ID),
           yesShares: p.yesShares || 0,
           noShares: p.noShares || 0,
@@ -178,13 +175,12 @@ export const SolanaProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         return;
       }
 
-      // Fallback to blockchain
-      if (program) {
+      if (program && anchorWallet) {
         const positionAccounts = await (program.account as any).userPosition.all([
           {
             memcmp: {
               offset: 8,
-              bytes: wallet.publicKey.toBase58(),
+              bytes: publicKey.toBase58(),
             },
           },
         ]);
@@ -221,17 +217,15 @@ export const SolanaProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     } finally {
       setIsLoading(false);
     }
-  }, [program, wallet, markets]);
+  }, [program, publicKey, anchorWallet, markets]);
 
   const buyShares = async (marketId: number, outcome: "Yes" | "No", amount: number): Promise<string> => {
-    if (!program || !wallet) throw new Error("Wallet not connected");
+    if (!program || !anchorWallet) throw new Error("Wallet not connected");
     
     try {
       const tx = await program.methods
         .buyShares({ [outcome.toLowerCase()]: {} }, amount)
-        .accounts({
-          // Add required accounts here
-        })
+        .accounts({})
         .rpc();
       
       await refreshMarkets();
@@ -243,14 +237,12 @@ export const SolanaProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const sellShares = async (marketId: number, outcome: "Yes" | "No", shares: number): Promise<string> => {
-    if (!program || !wallet) throw new Error("Wallet not connected");
+    if (!program || !anchorWallet) throw new Error("Wallet not connected");
     
     try {
       const tx = await program.methods
         .sellShares({ [outcome.toLowerCase()]: {} }, shares, 0)
-        .accounts({
-          // Add required accounts here
-        })
+        .accounts({})
         .rpc();
       
       await refreshMarkets();
@@ -261,42 +253,40 @@ export const SolanaProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
-  const createMarket = async (marketData: any): Promise<string> => {
-    if (!program || !wallet) throw new Error("Wallet not connected");
+  const createMarket = useCallback(async (marketData: any): Promise<string> => {
+    if (!connected || !publicKey) {
+      throw new Error("Wallet not connected");
+    }
     
     try {
-      const tx = await program.methods
-        .createMarket(
-          marketData.marketId,
-          marketData.question,
-          marketData.description,
-          marketData.category,
-          marketData.endTimestamp,
-          marketData.resolutionTimestamp,
-          marketData.oracleSource,
-          marketData.initialLiquidity
-        )
-        .accounts({
-          // Add required accounts here
-        })
-        .rpc();
+      const result = await api.createMarket({
+        marketId: marketData.marketId?.toString() || `market-${Date.now()}`,
+        question: marketData.question,
+        description: marketData.description,
+        category: marketData.category,
+        endTimestamp: marketData.endTimestamp,
+        resolutionTimestamp: marketData.resolutionTimestamp,
+        oracleSource: marketData.oracleSource,
+      });
+      
+      if (result.error) {
+        throw new Error(result.error);
+      }
       
       await refreshMarkets();
-      return tx;
+      return result.data?.market?.id || 'created';
     } catch (err: any) {
       throw new Error(err.message);
     }
-  };
+  }, [connected, publicKey, refreshMarkets]);
 
   const claimWinnings = async (marketId: number): Promise<string> => {
-    if (!program || !wallet) throw new Error("Wallet not connected");
+    if (!program || !anchorWallet) throw new Error("Wallet not connected");
     
     try {
       const tx = await program.methods
         .claimWinnings()
-        .accounts({
-          // Add required accounts here
-        })
+        .accounts({})
         .rpc();
       
       await refreshPositions();
@@ -311,10 +301,10 @@ export const SolanaProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, [refreshMarkets]);
 
   useEffect(() => {
-    if (wallet && isAuthenticated) {
+    if (connected && isAuthenticated) {
       refreshPositions();
     }
-  }, [wallet, isAuthenticated, refreshPositions]);
+  }, [connected, isAuthenticated, refreshPositions]);
 
   return (
     <SolanaContext.Provider

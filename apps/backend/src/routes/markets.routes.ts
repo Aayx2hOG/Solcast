@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { prismaClient } from 'db/client';
+import { prismaClient, MarketCategory } from 'db/client';
 import { authMiddleware } from '../middleware';
 import { dbAvailable, setDbAvailable } from '../utils/config';
 import { mockMarkets } from '../utils/mockData';
@@ -67,11 +67,15 @@ marketsRouter.post('/', authMiddleware, async (req: Request, res: Response) => {
                 marketId: finalMarketId,
                 question,
                 description,
-                category,
-                endTimestamp: new Date(endTimestamp),
-                resolutionTimestamp: new Date(resolutionTimestamp),
+                category: category as MarketCategory,
+                endTimestamp: new Date(endTimestamp * 1000),
+                resolutionTimestamp: new Date(resolutionTimestamp * 1000),
                 oracleSource,
-                creatorId: req.userId!,
+                creator: {
+                    connect: {
+                        id: (req as any).userId
+                    }
+                }
             }
         });
         res.json({ market });
@@ -80,13 +84,13 @@ marketsRouter.post('/', authMiddleware, async (req: Request, res: Response) => {
         setDbAvailable(false);
         const newMarket = {
             id: String(mockMarkets.length + 1),
-            marketId,
+            marketId: finalMarketId,
             question,
             description,
             category,
             createdAt: new Date(),
-            endTimestamp: new Date(endTimestamp),
-            resolutionTimestamp: new Date(resolutionTimestamp),
+            endTimestamp: new Date(endTimestamp * 1000),
+            resolutionTimestamp: new Date(resolutionTimestamp * 1000),
             oracleSource,
             status: "ACTIVE",
             yesLiquidity: 0,
@@ -94,7 +98,6 @@ marketsRouter.post('/', authMiddleware, async (req: Request, res: Response) => {
             totalVolume: 0,
             yesPrice: 0.5,
             noPrice: 0.5,
-            creator: { walletAddress: req.userId }
         };
         mockMarkets.push(newMarket as any);
         res.json({ market: newMarket });
