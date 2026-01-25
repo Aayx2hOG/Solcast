@@ -4,4 +4,5 @@ export interface Market {
   id: string;
   type: MarketType;
   active: boolean;
+  dbId?: number; // Reference to database market ID
 }
