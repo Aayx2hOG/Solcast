@@ -2,13 +2,11 @@
 
 import { useSolana } from "@/lib/contexts/SolanaContext";
 import { MarketCardEnhanced, MarketCardCompact } from "@/components/market/MarketCardEnhanced";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { HeroSection } from "@/components/home/HeroSection";
+import { HeroSection, FeaturesSection } from "@/components/home/HeroSection";
 import { LiveActivityFeed } from "@/components/ui/live-activity-feed";
 import { 
   TrendingUp, 
-  ArrowRight, 
   Flame, 
   Sparkles, 
   Clock,
@@ -69,50 +67,38 @@ export default function Home() {
 
   return (
     <div className="relative">
-      {/* Hero Section */}
       <HeroSection stats={stats} />
+      <FeaturesSection />
 
-      {/* Main Content */}
-      <div className="container mx-auto px-5 py-8 space-y-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
         
-        {/* Trending Section with Sidebar */}
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Featured Markets */}
+        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500/10">
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500/10 border border-orange-500/20">
                   <Flame className="h-4 w-4 text-orange-400" />
                 </div>
                 <div>
-                  <h2 className="text-base font-semibold text-foreground">
-                    Featured Markets
-                  </h2>
-                  <p className="text-[11px] text-muted-foreground">
-                    Highest volume prediction markets
-                  </p>
+                  <h2 className="text-sm font-medium text-white">Featured</h2>
+                  <p className="text-xs text-white/40">Highest volume</p>
                 </div>
               </div>
               <Link href="/explorer">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-muted-foreground hover:text-foreground text-xs h-8 group"
-                >
-                  View All 
-                  <ChevronRight className="ml-1 h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+                <Button variant="ghost" size="sm" className="text-white/40 hover:text-white text-xs h-8 px-3">
+                  View All <ChevronRight className="ml-1 h-3 w-3" />
                 </Button>
               </Link>
             </div>
             
             {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {[...Array(4)].map((_, i) => (
-                  <Card key={i} className="h-64 animate-pulse bg-card/50 border-white/[0.04]" />
+                  <div key={i} className="h-52 rounded-lg animate-pulse bg-white/[0.02] border border-white/[0.06]" />
                 ))}
               </div>
             ) : featuredMarkets.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {featuredMarkets.slice(0, 4).map((market, index) => (
                   <MarketCardEnhanced 
                     key={market.marketId} 
@@ -127,141 +113,102 @@ export default function Home() {
             )}
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Trending Markets List */}
-            <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-4">
+          <div className="space-y-4">
+            <div className="rounded-lg bg-white/[0.02] border border-white/[0.06] p-4">
               <div className="flex items-center gap-2 mb-4">
-                <TrendingUp className="h-4 w-4 text-emerald-400" />
-                <h3 className="text-sm font-semibold text-white">Trending</h3>
+                <div className="p-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                  <TrendingUp className="h-3.5 w-3.5 text-emerald-400" />
+                </div>
+                <h3 className="text-sm font-medium text-white">Trending</h3>
               </div>
               <div className="space-y-2">
                 {trendingMarkets.map((market, i) => (
                   <MarketCardCompact key={market.marketId} market={market} rank={i + 1} />
                 ))}
                 {trendingMarkets.length === 0 && (
-                  <p className="text-xs text-white/40 text-center py-4">No trending markets</p>
+                  <p className="text-xs text-white/30 text-center py-6">No trending markets</p>
                 )}
               </div>
             </div>
 
-            {/* Live Activity */}
-            <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-4">
+            <div className="rounded-lg bg-white/[0.02] border border-white/[0.06] p-4">
               <LiveActivityFeed maxItems={4} />
             </div>
           </div>
         </section>
 
-        {/* New Markets */}
         {newMarkets.length > 0 && (
           <section className="space-y-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/10">
-                  <Sparkles className="h-4 w-4 text-purple-400" />
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-500/10 border border-violet-500/20">
+                  <Sparkles className="h-4 w-4 text-violet-400" />
                 </div>
                 <div>
-                  <h2 className="text-base font-semibold text-foreground">
-                    New Markets
-                  </h2>
-                  <p className="text-[11px] text-muted-foreground">
-                    Recently created prediction markets
-                  </p>
+                  <h2 className="text-sm font-medium text-white">New</h2>
+                  <p className="text-xs text-white/40">Recently created</p>
                 </div>
               </div>
               <Link href="/explorer?sort=newest">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-muted-foreground hover:text-foreground text-xs h-8 group"
-                >
-                  View All 
-                  <ChevronRight className="ml-1 h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+                <Button variant="ghost" size="sm" className="text-white/40 hover:text-white text-xs h-8 px-3">
+                  View All <ChevronRight className="ml-1 h-3 w-3" />
                 </Button>
               </Link>
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {newMarkets.map((market, index) => (
-                <MarketCardEnhanced 
-                  key={market.marketId} 
-                  market={market}
-                  index={index}
-                />
+                <MarketCardEnhanced key={market.marketId} market={market} index={index} />
               ))}
             </div>
           </section>
         )}
 
-        {/* Ending Soon */}
         {endingSoonMarkets.length > 0 && (
           <section className="space-y-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500/10">
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-red-500/10 border border-red-500/20">
                   <Clock className="h-4 w-4 text-red-400" />
                 </div>
                 <div>
-                  <h2 className="text-base font-semibold text-foreground">
-                    Ending Soon
-                  </h2>
-                  <p className="text-[11px] text-muted-foreground">
-                    Last chance to trade
-                  </p>
+                  <h2 className="text-sm font-medium text-white">Ending Soon</h2>
+                  <p className="text-xs text-white/40">Last chance to trade</p>
                 </div>
               </div>
               <Link href="/explorer?sort=ending">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="text-muted-foreground hover:text-foreground text-xs h-8 group"
-                >
-                  View All 
-                  <ChevronRight className="ml-1 h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+                <Button variant="ghost" size="sm" className="text-white/40 hover:text-white text-xs h-8 px-3">
+                  View All <ChevronRight className="ml-1 h-3 w-3" />
                 </Button>
               </Link>
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {endingSoonMarkets.map((market, index) => (
-                <MarketCardEnhanced 
-                  key={market.marketId} 
-                  market={market}
-                  index={index}
-                />
+                <MarketCardEnhanced key={market.marketId} market={market} index={index} />
               ))}
             </div>
           </section>
         )}
 
-        {/* CTA Banner */}
         <motion.section
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-emerald-500/10 border border-white/[0.08] p-8 md:p-12"
+          className="rounded-lg bg-gradient-to-r from-indigo-500/5 to-violet-500/5 border border-white/[0.06] p-6"
         >
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="text-center md:text-left">
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
-                Have a prediction?
-              </h2>
-              <p className="text-white/60 max-w-md">
-                Create your own market and let the world trade on your predictions.
-              </p>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-center sm:text-left">
+              <h2 className="text-base font-medium text-white mb-1">Create a Market</h2>
+              <p className="text-sm text-white/50">Launch your own prediction market</p>
             </div>
             <Link href="/create">
-              <Button size="lg" className="group bg-white text-black hover:bg-white/90">
-                <Zap className="mr-2 h-4 w-4" />
+              <Button size="sm" className="bg-indigo-500 hover:bg-indigo-600 text-white h-9 px-4 text-sm">
+                <Zap className="mr-1.5 h-3.5 w-3.5" />
                 Create Market
-                <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
           </div>
-          
-          {/* Background decoration */}
-          <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-blue-500/20 rounded-full blur-3xl" />
         </motion.section>
       </div>
     </div>
@@ -270,24 +217,18 @@ export default function Home() {
 
 function EmptyState() {
   return (
-    <Card className="bg-card/50 border-white/[0.04] p-16 text-center">
-      <div className="max-w-md mx-auto space-y-4">
-        <div className="h-16 w-16 rounded-2xl bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center mx-auto">
-          <TrendingUp className="h-8 w-8 text-white/40" />
-        </div>
-        <div>
-          <h3 className="text-lg font-semibold text-foreground mb-2">No markets yet</h3>
-          <p className="text-sm text-muted-foreground">
-            Be the first to create a prediction market and start trading.
-          </p>
-        </div>
-        <Link href="/create">
-          <Button className="mt-4">
-            <Sparkles className="mr-2 h-4 w-4" />
-            Create the First Market
-          </Button>
-        </Link>
+    <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-10 text-center">
+      <div className="h-12 w-12 rounded-lg bg-white/[0.03] border border-white/[0.08] flex items-center justify-center mx-auto mb-4">
+        <TrendingUp className="h-6 w-6 text-white/40" />
       </div>
-    </Card>
+      <h3 className="text-sm font-medium text-white mb-1">No markets yet</h3>
+      <p className="text-xs text-white/40 mb-4">Be the first to create a prediction market</p>
+      <Link href="/create">
+        <Button size="sm" className="h-8 px-4 text-xs bg-indigo-500 hover:bg-indigo-600">
+          <Sparkles className="mr-1.5 h-3 w-3" />
+          Create Market
+        </Button>
+      </Link>
+    </div>
   );
 }

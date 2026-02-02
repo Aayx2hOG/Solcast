@@ -4,11 +4,10 @@ import { useSolana } from "@/lib/contexts/SolanaContext";
 import { MarketCard } from "@/components/market/MarketCard";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Search, Filter } from "lucide-react";
+import { Search, Compass } from "lucide-react";
 import { useState, useMemo } from "react";
 import { MarketCategory, MarketStatus } from "@/lib/types";
+import { motion } from "framer-motion";
 
 export default function ExplorerPage() {
   const { markets, isLoading } = useSolana();
@@ -20,7 +19,6 @@ export default function ExplorerPage() {
   const filteredMarkets = useMemo(() => {
     let filtered = markets;
 
-    // Search filter
     if (searchQuery) {
       filtered = filtered.filter(
         (m) =>
@@ -29,17 +27,14 @@ export default function ExplorerPage() {
       );
     }
 
-    // Category filter
     if (selectedCategory !== "All") {
       filtered = filtered.filter((m) => m.category === selectedCategory);
     }
 
-    // Status filter
     if (selectedStatus !== "All") {
       filtered = filtered.filter((m) => m.status === selectedStatus);
     }
 
-    // Sort
     switch (sortBy) {
       case "volume":
         filtered.sort((a, b) => b.totalVolume - a.totalVolume);
@@ -59,113 +54,128 @@ export default function ExplorerPage() {
   const statuses = ["All", ...Object.values(MarketStatus)];
 
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
-      <div>
-        <h1 className="text-4xl font-bold mb-2">Market Explorer</h1>
-        <p className="text-muted-foreground">
-          Browse and discover prediction markets across all categories
-        </p>
-      </div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex items-center gap-3"
+      >
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-500/10 border border-indigo-500/20">
+          <Compass className="h-5 w-5 text-indigo-400" />
+        </div>
+        <div>
+          <h1 className="text-lg font-medium text-white">Markets</h1>
+          <p className="text-sm text-white/50">Browse prediction markets</p>
+        </div>
+      </motion.div>
 
-      <Card className="p-4 space-y-4">
+      <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-4 space-y-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/30" />
           <Input
             placeholder="Search markets..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
+            className="pl-10 h-10 bg-white/[0.03] border-white/[0.08] text-white text-sm placeholder:text-white/25 focus:border-indigo-500/50"
           />
         </div>
 
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4" />
-            <span className="text-sm font-medium">Category</span>
-          </div>
-          <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="text-xs text-white/40">Category</span>
+          <div className="flex flex-wrap gap-1.5">
             {categories.map((category) => (
-              <Badge
+              <button
                 key={category}
-                variant={selectedCategory === category ? "default" : "secondary"}
-                className="cursor-pointer"
+                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                  selectedCategory === category 
+                    ? "bg-indigo-500 text-white" 
+                    : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] border border-white/[0.08]"
+                }`}
                 onClick={() => setSelectedCategory(category as MarketCategory | "All")}
               >
                 {category}
-              </Badge>
+              </button>
             ))}
           </div>
         </div>
 
-        <div className="space-y-2">
-          <span className="text-sm font-medium">Status</span>
-          <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="text-xs text-white/40">Status</span>
+          <div className="flex flex-wrap gap-1.5">
             {statuses.map((status) => (
-              <Badge
+              <button
                 key={status}
-                variant={selectedStatus === status ? "default" : "secondary"}
-                className="cursor-pointer"
+                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                  selectedStatus === status 
+                    ? "bg-indigo-500 text-white" 
+                    : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] border border-white/[0.08]"
+                }`}
                 onClick={() => setSelectedStatus(status as MarketStatus | "All")}
               >
                 {status}
-              </Badge>
+              </button>
             ))}
           </div>
         </div>
 
-        <div className="space-y-2">
-          <span className="text-sm font-medium">Sort By</span>
-          <div className="flex gap-2">
-            <Button
-              variant={sortBy === "volume" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSortBy("volume")}
-            >
-              Highest Volume
-            </Button>
-            <Button
-              variant={sortBy === "newest" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSortBy("newest")}
-            >
-              Newest
-            </Button>
-            <Button
-              variant={sortBy === "ending_soon" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSortBy("ending_soon")}
-            >
-              Ending Soon
-            </Button>
+        <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-white/[0.06]">
+          <span className="text-xs text-white/40">Sort</span>
+          <div className="flex gap-1.5">
+            {[
+              { key: "volume", label: "Volume" },
+              { key: "newest", label: "Newest" },
+              { key: "ending_soon", label: "Ending Soon" },
+            ].map((option) => (
+              <button
+                key={option.key}
+                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                  sortBy === option.key 
+                    ? "bg-emerald-500 text-white" 
+                    : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] border border-white/[0.08]"
+                }`}
+                onClick={() => setSortBy(option.key as "volume" | "newest" | "ending_soon")}
+              >
+                {option.label}
+              </button>
+            ))}
           </div>
         </div>
-      </Card>
-
-      <div>
-        <p className="text-sm text-muted-foreground mb-4">
-          {filteredMarkets.length} market{filteredMarkets.length !== 1 ? "s" : ""} found
-        </p>
-
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[...Array(9)].map((_, i) => (
-              <Card key={i} className="h-64 animate-pulse bg-muted" />
-            ))}
-          </div>
-        ) : filteredMarkets.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredMarkets.map((market) => (
-              <MarketCard key={market.marketId} market={market} />
-            ))}
-          </div>
-        ) : (
-          <Card className="p-12 text-center">
-            <p className="text-muted-foreground">
-              No markets found matching your criteria.
-            </p>
-          </Card>
-        )}
       </div>
+
+      <p className="text-xs text-white/40">
+        {filteredMarkets.length} market{filteredMarkets.length !== 1 ? "s" : ""}
+      </p>
+
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[...Array(9)].map((_, i) => (
+            <div key={i} className="h-48 rounded-lg animate-pulse bg-white/[0.02] border border-white/[0.06]" />
+          ))}
+        </div>
+      ) : filteredMarkets.length > 0 ? (
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+        >
+          {filteredMarkets.map((market, index) => (
+            <motion.div
+              key={market.marketId}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.02 }}
+            >
+              <MarketCard market={market} />
+            </motion.div>
+          ))}
+        </motion.div>
+      ) : (
+        <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-12 text-center">
+          <Search className="h-8 w-8 mx-auto mb-3 text-white/20" />
+          <p className="text-sm text-white/50">No markets found</p>
+          <p className="text-xs text-white/30 mt-1">Try adjusting your filters</p>
+        </div>
+      )}
     </div>
   );
 }

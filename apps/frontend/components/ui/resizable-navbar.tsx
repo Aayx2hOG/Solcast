@@ -8,6 +8,7 @@ import {
   useMotionValueEvent,
 } from "motion/react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import React, { useState, createContext, useContext } from "react";
 
 interface NavbarContextType {
@@ -86,36 +87,44 @@ interface NavItemsProps {
 
 export const NavItems = ({ items, className }: NavItemsProps) => {
   const { isScrolled } = useContext(NavbarContext);
+  const pathname = usePathname();
 
   return (
     <div className={cn("flex items-center gap-1", className)}>
-      {items.map((item, idx) => (
-        <Link
-          key={`nav-item-${idx}`}
-          href={item.link}
-          className={cn(
-            "relative py-2 text-sm font-medium",
-            "text-neutral-400 hover:text-white",
-            "rounded-full hover:bg-white/[0.05]",
-            "transition-all duration-200",
-            "flex items-center gap-1.5",
-            isScrolled ? "px-2" : "px-3"
-          )}
-          title={item.name}
-        >
-          {item.icon && <span className="h-4 w-4 flex-shrink-0">{item.icon}</span>}
-          <motion.span
-            animate={{
-              width: isScrolled ? 0 : "auto",
-              opacity: isScrolled ? 0 : 1,
-            }}
-            transition={{ duration: 0.2 }}
-            className="overflow-hidden whitespace-nowrap"
+      {items.map((item, idx) => {
+        const isActive = pathname === item.link || 
+          (item.link !== "/" && pathname.startsWith(item.link));
+        
+        return (
+          <Link
+            key={`nav-item-${idx}`}
+            href={item.link}
+            className={cn(
+              "relative py-2 text-sm font-medium",
+              "rounded-full",
+              "transition-all duration-200",
+              "flex items-center gap-1.5",
+              isScrolled ? "px-2" : "px-3",
+              isActive 
+                ? "text-white bg-white/[0.1]" 
+                : "text-neutral-400 hover:text-white hover:bg-white/[0.05]"
+            )}
+            title={item.name}
           >
-            {item.name}
-          </motion.span>
-        </Link>
-      ))}
+            {item.icon && <span className="h-4 w-4 flex-shrink-0">{item.icon}</span>}
+            <motion.span
+              animate={{
+                width: isScrolled ? 0 : "auto",
+                opacity: isScrolled ? 0 : 1,
+              }}
+              transition={{ duration: 0.2 }}
+              className="overflow-hidden whitespace-nowrap"
+            >
+              {item.name}
+            </motion.span>
+          </Link>
+        );
+      })}
     </div>
   );
 };

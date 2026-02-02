@@ -27,14 +27,22 @@ interface PortfolioDashboardProps {
   className?: string;
 }
 
-export function PortfolioDashboard({ positions, markets, className }: PortfolioDashboardProps) {
+export function PortfolioDashboard({
+  positions,
+  markets,
+  className,
+}: PortfolioDashboardProps) {
   // Calculate portfolio stats
   const portfolioStats = useMemo(() => {
     const totalValue = positions.reduce((sum, p) => sum + p.currentValue, 0);
-    const totalInvested = positions.reduce((sum, p) => sum + p.totalInvested, 0);
+    const totalInvested = positions.reduce(
+      (sum, p) => sum + p.totalInvested,
+      0,
+    );
     const totalPnl = positions.reduce((sum, p) => sum + p.pnl, 0);
-    const pnlPercentage = totalInvested > 0 ? (totalPnl / totalInvested) * 100 : 0;
-    
+    const pnlPercentage =
+      totalInvested > 0 ? (totalPnl / totalInvested) * 100 : 0;
+
     return {
       totalValue,
       totalInvested,
@@ -48,7 +56,7 @@ export function PortfolioDashboard({ positions, markets, className }: PortfolioD
   const portfolioHistory = useMemo(() => {
     const data: number[] = [];
     let value = portfolioStats.totalValue * 0.7;
-    
+
     for (let i = 0; i < 30; i++) {
       const change = (Math.random() - 0.4) * value * 0.05;
       value = Math.max(0, value + change);
@@ -68,38 +76,50 @@ export function PortfolioDashboard({ positions, markets, className }: PortfolioD
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             {/* Main Stats */}
             <div className="space-y-1">
-              <p className="text-sm text-white/50 font-medium">Portfolio Value</p>
+              <p className="text-sm text-white/50 font-medium">
+                Portfolio Value
+              </p>
               <div className="flex items-baseline gap-3">
                 <span className="text-4xl font-bold text-white tabular-nums">
-                  $<AnimatedCounter value={portfolioStats.totalValue / 1_000_000} decimals={2} />
+                  $
+                  <AnimatedCounter
+                    value={portfolioStats.totalValue / 1_000_000}
+                    decimals={2}
+                  />
                 </span>
-                <div className={cn(
-                  "flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium",
-                  isProfitable 
-                    ? "bg-emerald-500/20 text-emerald-400" 
-                    : "bg-red-500/20 text-red-400"
-                )}>
+                <div
+                  className={cn(
+                    "flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium",
+                    isProfitable
+                      ? "bg-emerald-500/20 text-emerald-400"
+                      : "bg-red-500/20 text-red-400",
+                  )}
+                >
                   {isProfitable ? (
                     <ArrowUpRight className="h-3 w-3" />
                   ) : (
                     <ArrowDownRight className="h-3 w-3" />
                   )}
-                  {isProfitable ? "+" : ""}{portfolioStats.pnlPercentage.toFixed(2)}%
+                  {isProfitable ? "+" : ""}
+                  {portfolioStats.pnlPercentage.toFixed(2)}%
                 </div>
               </div>
-              <p className={cn(
-                "text-sm font-medium tabular-nums",
-                isProfitable ? "text-emerald-400" : "text-red-400"
-              )}>
-                {isProfitable ? "+" : ""}${(portfolioStats.totalPnl / 1_000_000).toFixed(2)}M all time
+              <p
+                className={cn(
+                  "text-sm font-medium tabular-nums",
+                  isProfitable ? "text-emerald-400" : "text-red-400",
+                )}
+              >
+                {isProfitable ? "+" : ""}$
+                {(portfolioStats.totalPnl / 1_000_000).toFixed(2)}M all time
               </p>
             </div>
 
             {/* Mini Chart */}
             <div className="w-full md:w-64">
-              <MiniChart 
-                data={portfolioHistory} 
-                width={256} 
+              <MiniChart
+                data={portfolioHistory}
+                width={256}
                 height={80}
                 color={isProfitable ? "#22c55e" : "#ef4444"}
               />
@@ -142,7 +162,9 @@ export function PortfolioDashboard({ positions, markets, className }: PortfolioD
         {positions.length === 0 ? (
           <Card className="p-8 text-center bg-white/[0.02] border-white/[0.06]">
             <Wallet className="h-12 w-12 mx-auto text-white/20 mb-4" />
-            <h3 className="text-base font-semibold text-white mb-2">No positions yet</h3>
+            <h3 className="text-base font-semibold text-white mb-2">
+              No positions yet
+            </h3>
             <p className="text-sm text-white/50 mb-4">
               Start trading to build your portfolio
             </p>
@@ -153,10 +175,12 @@ export function PortfolioDashboard({ positions, markets, className }: PortfolioD
         ) : (
           <div className="space-y-2">
             {positions.map((position, index) => {
-              const market = markets.find(m => m.publicKey.equals(position.market));
+              const market = markets.find((m) =>
+                m.publicKey.equals(position.market),
+              );
               return (
-                <PositionRow 
-                  key={position.publicKey.toString()} 
+                <PositionRow
+                  key={position.publicKey.toString()}
                   position={position}
                   market={market}
                   index={index}
@@ -181,11 +205,10 @@ function PositionRow({ position, market, index }: PositionRowProps) {
   const hasYesPosition = position.yesShares > 0;
   const hasNoPosition = position.noShares > 0;
 
-  // Generate mock chart data for position
   const positionHistory = useMemo(() => {
     const data: number[] = [];
     let value = position.totalInvested * 0.8;
-    
+
     for (let i = 0; i < 15; i++) {
       const change = (Math.random() - 0.45) * value * 0.1;
       value = Math.max(0, value + change);
@@ -205,10 +228,12 @@ function PositionRow({ position, market, index }: PositionRowProps) {
         <Card className="p-4 bg-white/[0.02] border-white/[0.06] hover:bg-white/[0.04] hover:border-white/[0.1] transition-all cursor-pointer group">
           <div className="flex items-center gap-4">
             {/* Position indicator */}
-            <div className={cn(
-              "flex h-10 w-10 items-center justify-center rounded-lg shrink-0",
-              isProfitable ? "bg-emerald-500/10" : "bg-red-500/10"
-            )}>
+            <div
+              className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-lg shrink-0",
+                isProfitable ? "bg-emerald-500/10" : "bg-red-500/10",
+              )}
+            >
               {isProfitable ? (
                 <TrendingUp className="h-5 w-5 text-emerald-400" />
               ) : (
@@ -223,12 +248,18 @@ function PositionRow({ position, market, index }: PositionRowProps) {
               </p>
               <div className="flex items-center gap-2 mt-1">
                 {hasYesPosition && (
-                  <Badge variant="outline" className="text-[9px] border-emerald-500/30 text-emerald-400">
+                  <Badge
+                    variant="outline"
+                    className="text-[9px] border-emerald-500/30 text-emerald-400"
+                  >
                     {position.yesShares.toFixed(0)} YES
                   </Badge>
                 )}
                 {hasNoPosition && (
-                  <Badge variant="outline" className="text-[9px] border-red-500/30 text-red-400">
+                  <Badge
+                    variant="outline"
+                    className="text-[9px] border-red-500/30 text-red-400"
+                  >
                     {position.noShares.toFixed(0)} NO
                   </Badge>
                 )}
@@ -242,9 +273,9 @@ function PositionRow({ position, market, index }: PositionRowProps) {
 
             {/* Mini chart */}
             <div className="hidden md:block w-24">
-              <MiniChart 
-                data={positionHistory} 
-                width={96} 
+              <MiniChart
+                data={positionHistory}
+                width={96}
                 height={32}
                 color={isProfitable ? "#22c55e" : "#ef4444"}
               />
@@ -252,17 +283,23 @@ function PositionRow({ position, market, index }: PositionRowProps) {
 
             {/* P&L */}
             <div className="text-right">
-              <p className={cn(
-                "text-sm font-semibold tabular-nums",
-                isProfitable ? "text-emerald-400" : "text-red-400"
-              )}>
-                {isProfitable ? "+" : ""}{position.pnlPercentage.toFixed(2)}%
+              <p
+                className={cn(
+                  "text-sm font-semibold tabular-nums",
+                  isProfitable ? "text-emerald-400" : "text-red-400",
+                )}
+              >
+                {isProfitable ? "+" : ""}
+                {position.pnlPercentage.toFixed(2)}%
               </p>
-              <p className={cn(
-                "text-xs tabular-nums",
-                isProfitable ? "text-emerald-400/70" : "text-red-400/70"
-              )}>
-                {isProfitable ? "+" : ""}${(position.pnl / 1_000_000).toFixed(2)}
+              <p
+                className={cn(
+                  "text-xs tabular-nums",
+                  isProfitable ? "text-emerald-400/70" : "text-red-400/70",
+                )}
+              >
+                {isProfitable ? "+" : ""}$
+                {(position.pnl / 1_000_000).toFixed(2)}
               </p>
             </div>
 

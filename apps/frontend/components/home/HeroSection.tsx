@@ -2,11 +2,10 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { GradientText } from "@/components/ui/gradient-text";
 import { AnimatedCounter } from "@/components/ui/animated-counter";
 import { ParticleField, GradientMesh, GridPattern } from "@/components/effects/ParticleField";
 import { LiveActivityTicker } from "@/components/ui/live-activity-feed";
-import { ArrowRight, Wallet, Sparkles, TrendingUp, Shield, Zap } from "lucide-react";
+import { ArrowRight, TrendingUp, Shield, Zap } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 
@@ -26,65 +25,56 @@ interface HeroSectionProps {
 
 export function HeroSection({ stats }: HeroSectionProps) {
   return (
-    <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
-      {/* Background Effects */}
-      <GradientMesh className="opacity-60" />
-      <GridPattern className="opacity-30" />
+    <section className="relative min-h-[70vh] flex items-center justify-center overflow-hidden">
+      <GradientMesh className="opacity-20" />
+      <GridPattern className="opacity-5" />
       <ParticleField 
-        particleCount={40} 
+        particleCount={25} 
         color="#6366f1" 
-        speed={0.3}
-        className="opacity-40"
+        speed={0.15}
+        className="opacity-10"
       />
 
-      {/* Content */}
-      <div className="relative z-10 container mx-auto px-5">
-        <div className="max-w-4xl mx-auto text-center">
-          {/* Badge */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(99,102,241,0.08),transparent_50%)]" />
+
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto text-center">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.05] border border-white/[0.08] backdrop-blur-sm mb-8"
+            transition={{ duration: 0.4 }}
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.03] border border-white/[0.08] mb-6"
           >
-            <div className="relative flex h-2 w-2">
+            <div className="relative flex h-1.5 w-1.5">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-400" />
             </div>
-            <span className="text-xs font-medium text-white/70">Powered by Solana</span>
-            <Sparkles className="h-3 w-3 text-purple-400" />
+            <span className="text-xs text-white/50">Built on Solana</span>
           </motion.div>
 
-          {/* Main Heading */}
           <motion.h1
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6"
+            transition={{ duration: 0.4, delay: 0.1 }}
+            className="text-3xl sm:text-4xl font-semibold text-white mb-4 tracking-tight"
           >
-            <span className="text-white">Trade the </span>
-            <GradientText gradient="primary" animated>
-              Future
-            </GradientText>
+            Prediction Markets
           </motion.h1>
 
-          {/* Subtitle */}
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="text-lg sm:text-xl text-white/60 mb-10 max-w-2xl mx-auto leading-relaxed"
+            transition={{ duration: 0.4, delay: 0.15 }}
+            className="text-sm text-white/50 mb-8 max-w-md mx-auto"
           >
-            Decentralized prediction markets on Solana. 
-            Trade on real-world events with instant settlement and minimal fees.
+            Trade on future outcomes. Instant settlement. Minimal fees.
           </motion.p>
 
-          {/* CTA Buttons */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
+            transition={{ duration: 0.4, delay: 0.2 }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-8"
           >
             <div className="wallet-adapter-button-trigger">
               <WalletMultiButton />
@@ -92,66 +82,55 @@ export function HeroSection({ stats }: HeroSectionProps) {
             <Link href="/explorer">
               <Button
                 variant="outline"
-                size="lg"
-                className="group border-white/10 bg-white/[0.02] hover:bg-white/[0.05] text-white"
+                size="sm"
+                className="group border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.06] text-white/70 h-9 px-4 text-sm"
               >
-                Explore Markets
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                Browse Markets
+                <ArrowRight className="ml-1.5 h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
               </Button>
             </Link>
           </motion.div>
 
-          {/* Live Activity Ticker */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="flex justify-center mb-12"
+            transition={{ duration: 0.4, delay: 0.25 }}
+            className="flex justify-center mb-8"
           >
-            <LiveActivityTicker className="px-4 py-2 rounded-full bg-white/[0.03] border border-white/[0.06]" />
+            <LiveActivityTicker className="px-3 py-2 rounded-full bg-white/[0.02] border border-white/[0.06] text-xs" />
           </motion.div>
 
-          {/* Stats Grid */}
           <motion.div
-            initial={{ opacity: 0, y: 30 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.5 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8"
+            transition={{ duration: 0.4, delay: 0.3 }}
+            className="grid grid-cols-2 lg:grid-cols-4 gap-3"
           >
             <StatCard
-              label="Total Volume"
+              label="Volume"
               value={parseFloat(stats.totalVolume) * 1_000_000}
               format="currency"
               decimals={2}
-              icon={<TrendingUp className="h-4 w-4" />}
-              delay={0.6}
             />
             <StatCard
-              label="Active Markets"
+              label="Active"
               value={stats.activeMarkets}
-              icon={<Zap className="h-4 w-4" />}
-              delay={0.7}
             />
             <StatCard
-              label="Total Liquidity"
+              label="Liquidity"
               value={parseFloat(stats.totalLiquidity) * 1_000_000}
               format="currency"
               decimals={2}
-              icon={<Shield className="h-4 w-4" />}
-              delay={0.8}
             />
             <StatCard
-              label="All-Time Markets"
+              label="Total"
               value={stats.totalMarkets}
-              icon={<Sparkles className="h-4 w-4" />}
-              delay={0.9}
             />
           </motion.div>
         </div>
       </div>
 
-      {/* Bottom gradient fade */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black to-transparent" />
     </section>
   );
 }
@@ -161,89 +140,72 @@ interface StatCardProps {
   value: number;
   format?: "number" | "currency" | "percentage";
   decimals?: number;
-  icon: React.ReactNode;
-  delay: number;
 }
 
-function StatCard({ label, value, format = "number", decimals = 0, icon, delay }: StatCardProps) {
+function StatCard({ label, value, format = "number", decimals = 0 }: StatCardProps) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay }}
-      className="group relative"
-    >
-      <div className="relative p-6 rounded-xl bg-white/[0.02] border border-white/[0.06] backdrop-blur-sm transition-all duration-300 hover:bg-white/[0.04] hover:border-white/[0.1]">
-        {/* Glow effect on hover */}
-        <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-500/0 via-blue-500/0 to-emerald-500/0 opacity-0 group-hover:opacity-10 transition-opacity duration-500" />
-        
-        <div className="relative">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-white/50 uppercase tracking-wider">
-              {label}
-            </span>
-            <div className="text-white/30 group-hover:text-white/50 transition-colors">
-              {icon}
-            </div>
-          </div>
-          <div className="text-2xl md:text-3xl font-bold text-white">
-            <AnimatedCounter 
-              value={value} 
-              format={format}
-              decimals={decimals}
-              duration={2}
-            />
-          </div>
-        </div>
+    <div className="p-4 rounded-lg bg-white/[0.02] border border-white/[0.06]">
+      <div className="text-[10px] text-white/30 mb-1">{label}</div>
+      <div className="text-lg font-semibold text-white tabular-nums">
+        <AnimatedCounter 
+          value={value} 
+          format={format}
+          decimals={decimals}
+          duration={1.2}
+        />
       </div>
-    </motion.div>
+    </div>
   );
 }
 
-// Features section for below hero
 export function FeaturesSection() {
   const features = [
     {
-      icon: <Zap className="h-5 w-5" />,
-      title: "Instant Settlement",
-      description: "Trades settle in seconds on Solana with minimal fees.",
-      color: "text-yellow-400",
-      bgColor: "bg-yellow-400/10",
+      icon: <Zap className="h-4 w-4" />,
+      title: "Instant",
+      description: "Trades settle in seconds",
+      color: "text-amber-400",
+      bgColor: "bg-amber-500/10",
+      borderColor: "border-amber-500/20",
     },
     {
-      icon: <Shield className="h-5 w-5" />,
-      title: "Fully Decentralized",
-      description: "Non-custodial trading. Your keys, your funds.",
+      icon: <Shield className="h-4 w-4" />,
+      title: "Non-Custodial",
+      description: "Your keys, your funds",
       color: "text-emerald-400",
-      bgColor: "bg-emerald-400/10",
+      bgColor: "bg-emerald-500/10",
+      borderColor: "border-emerald-500/20",
     },
     {
-      icon: <TrendingUp className="h-5 w-5" />,
-      title: "Real-Time Prices",
-      description: "AI-powered oracle for accurate market resolution.",
-      color: "text-blue-400",
-      bgColor: "bg-blue-400/10",
+      icon: <TrendingUp className="h-4 w-4" />,
+      title: "Real-Time",
+      description: "Live price updates",
+      color: "text-indigo-400",
+      bgColor: "bg-indigo-500/10",
+      borderColor: "border-indigo-500/20",
     },
   ];
 
   return (
-    <section className="py-16 border-t border-white/[0.04]">
-      <div className="container mx-auto px-5">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <section className="py-8 border-t border-white/[0.06]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {features.map((feature, index) => (
             <motion.div
               key={feature.title}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 10 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
               viewport={{ once: true }}
-              className="group p-6 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-white/[0.1] transition-all"
+              className="flex items-center gap-4 p-4 rounded-lg bg-white/[0.02] border border-white/[0.06]"
             >
-              <div className={`inline-flex p-3 rounded-lg ${feature.bgColor} mb-4`}>
+              <div className={`p-2 rounded-lg ${feature.bgColor} border ${feature.borderColor}`}>
                 <span className={feature.color}>{feature.icon}</span>
               </div>
-              <h3 className="text-lg font-semibold text-white mb-2">{feature.title}</h3>
-              <p className="text-sm text-white/50">{feature.description}</p>
+              <div>
+                <h3 className="text-sm font-medium text-white">{feature.title}</h3>
+                <p className="text-xs text-white/40">{feature.description}</p>
+              </div>
             </motion.div>
           ))}
         </div>

@@ -1,8 +1,7 @@
 "use client";
 
 import { Market } from "@/lib/types";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { TrendingUp, TrendingDown, Clock, Users } from "lucide-react";
 import Link from "next/link";
@@ -19,95 +18,75 @@ export function MarketCard({ market, showVolume = true }: MarketCardProps) {
   const noPercentage = (market.noPrice * 100).toFixed(1);
   const isPriceUp = (market.priceChange24h ?? 0) > 0;
 
-  // Different glow colors based on market status
-  const glowColor = market.status === "Active" 
-    ? "76, 95, 213" // Purple-blue for active
-    : market.status === "Resolved" 
-      ? "34, 197, 94" // Green for resolved
-      : "239, 68, 68"; // Red for closed/cancelled
-
   return (
     <Link href={`/market/${market.marketId}`}>
-      <Card 
-        className="group cursor-pointer transition-all duration-300 hover:translate-y-[-2px] bg-card/80 backdrop-blur-sm"
-        enableGlow={true}
-        glowColor={glowColor}
-      >
-        <CardHeader className="pb-2.5">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex-1">
-              <div className="flex items-center gap-1.5 mb-2">
-                <Badge variant="secondary" className="text-[9px]">
-                  {market.category}
-                </Badge>
-                <Badge 
-                  variant={
-                    market.status === "Active" ? "success" :
-                    market.status === "Resolved" ? "info" : "danger"
-                  }
-                  className="text-[9px]"
-                >
-                  {market.status}
-                </Badge>
-              </div>
-              <h3 className="font-medium text-xs leading-tight text-foreground line-clamp-2">
-                {market.question}
-              </h3>
-            </div>
+      <Card className="group cursor-pointer transition-all duration-200 hover:border-white/[0.12] bg-white/[0.02] border-white/[0.06]">
+        <CardContent className="p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-white/[0.05] text-white/50 border border-white/[0.08]">
+              {market.category}
+            </span>
+            <span className={cn(
+              "px-2 py-0.5 rounded-md text-[10px] font-medium",
+              market.status === "Active" && "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
+              market.status === "Resolved" && "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20",
+              market.status !== "Active" && market.status !== "Resolved" && "bg-red-500/10 text-red-400 border border-red-500/20"
+            )}>
+              {market.status}
+            </span>
           </div>
-        </CardHeader>
 
-        <CardContent className="space-y-3 p-4 pt-0">
-          {/* Price Display */}
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex-1">
-              <div className="text-[9px] text-muted-foreground font-medium uppercase tracking-wider mb-0.5">Yes</div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-base font-semibold tabular-nums text-emerald-400/90">
+          <h3 className="text-sm text-white/80 line-clamp-2 group-hover:text-white transition-colors leading-relaxed">
+            {market.question}
+          </h3>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-[10px] text-white/30 mb-0.5">Yes</div>
+              <div className="flex items-center gap-2">
+                <span className="text-lg font-semibold tabular-nums text-emerald-400">
                   {yesPercentage}%
                 </span>
                 {market.priceChange24h !== undefined && (
-                  <div className={cn(
-                    "flex items-center text-[9px]",
-                    isPriceUp ? "text-emerald-400/70" : "text-red-400/70"
+                  <span className={cn(
+                    "flex items-center text-[10px] font-medium",
+                    isPriceUp ? "text-emerald-400" : "text-red-400"
                   )}>
-                    {isPriceUp ? <TrendingUp className="h-2 w-2 mr-0.5" strokeWidth={2} /> : <TrendingDown className="h-2 w-2 mr-0.5" strokeWidth={2} />}
-                    <span className="font-medium tabular-nums">{Math.abs(market.priceChange24h).toFixed(1)}%</span>
-                  </div>
+                    {isPriceUp ? <TrendingUp className="h-2.5 w-2.5 mr-0.5" /> : <TrendingDown className="h-2.5 w-2.5 mr-0.5" />}
+                    {Math.abs(market.priceChange24h).toFixed(1)}%
+                  </span>
                 )}
               </div>
             </div>
-            <div className="flex-1 text-right">
-              <div className="text-[9px] text-muted-foreground font-medium uppercase tracking-wider mb-0.5">No</div>
-              <div className="text-base font-semibold tabular-nums text-red-400/90">
+            <div className="text-right">
+              <div className="text-[10px] text-white/30 mb-0.5">No</div>
+              <span className="text-lg font-semibold tabular-nums text-red-400">
                 {noPercentage}%
-              </div>
+              </span>
             </div>
           </div>
 
-          {/* Progress Bar */}
-          <div className="h-0.5 bg-secondary overflow-hidden flex">
+          <div className="h-1.5 bg-white/[0.05] rounded-full overflow-hidden flex">
             <div 
-              className="bg-emerald-600/50 transition-all duration-500"
+              className="bg-emerald-500 transition-all duration-300 rounded-l-full"
               style={{ width: `${yesPercentage}%` }}
             />
             <div 
-              className="bg-red-600/50 transition-all duration-500"
+              className="bg-red-500 transition-all duration-300 rounded-r-full"
               style={{ width: `${noPercentage}%` }}
             />
           </div>
 
-          {/* Stats */}
-          <div className="flex items-center gap-3 text-[10px] text-muted-foreground border-t border-border/[0.06] pt-2.5">
+          <div className="flex items-center gap-4 text-[11px] text-white/40 pt-1">
             {showVolume && (
-              <div className="flex items-center gap-1">
-                <Users className="h-2.5 w-2.5" strokeWidth={1.5} />
-                <span className="font-medium tabular-nums">${(market.totalVolume / 1_000_000).toFixed(1)}M</span>
+              <div className="flex items-center gap-1.5">
+                <Users className="h-3 w-3" />
+                <span className="tabular-nums">${(market.totalVolume / 1_000_000).toFixed(1)}M</span>
               </div>
             )}
-            <div className="flex items-center gap-1">
-              <Clock className="h-2.5 w-2.5" strokeWidth={1.5} />
-              <span className="font-medium">{timeRemaining}</span>
+            <div className="flex items-center gap-1.5">
+              <Clock className="h-3 w-3" />
+              <span>{timeRemaining}</span>
             </div>
           </div>
         </CardContent>
@@ -115,4 +94,3 @@ export function MarketCard({ market, showVolume = true }: MarketCardProps) {
     </Link>
   );
 }
-

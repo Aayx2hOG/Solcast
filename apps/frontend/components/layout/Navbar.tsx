@@ -17,7 +17,6 @@ import {
   NavItems,
   MobileNav,
   NavbarLogo,
-  NavbarButton,
   MobileNavHeader,
   MobileNavToggle,
   MobileNavMenu,
@@ -25,14 +24,13 @@ import {
 } from "@/components/ui/resizable-navbar";
 import { cn } from "@/lib/utils";
 
-// Dynamically import to avoid SSR hydration mismatch
 const WalletMultiButton = dynamic(
   () => import("@solana/wallet-adapter-react-ui").then((mod) => mod.WalletMultiButton),
   { ssr: false }
 );
 
 const navigation = [
-  { name: "Explorer", link: "/explorer", icon: <Search className="h-4 w-4" /> },
+  { name: "Markets", link: "/explorer", icon: <Search className="h-4 w-4" /> },
   { name: "Portfolio", link: "/portfolio", icon: <Briefcase className="h-4 w-4" /> },
   { name: "Create", link: "/create", icon: <PlusCircle className="h-4 w-4" /> },
   { name: "Leaderboard", link: "/leaderboard", icon: <Trophy className="h-4 w-4" /> },
@@ -46,7 +44,6 @@ export function Navbar() {
   return (
     <div className="relative w-full">
       <NavbarWrapper>
-        {/* Desktop Navigation */}
         <NavBody>
           <NavbarLogo />
           <NavItems items={navigation} />
@@ -57,11 +54,10 @@ export function Navbar() {
           </div>
         </NavBody>
 
-        {/* Mobile Navigation */}
         <MobileNav>
           <MobileNavHeader>
             <NavbarLogo />
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <WalletMultiButton />
               <MobileNavToggle
                 isOpen={isMobileMenuOpen}
@@ -80,10 +76,10 @@ export function Navbar() {
                 href={item.link}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={cn(
-                  "flex items-center gap-3 px-2 py-2 rounded-lg transition-colors",
+                  "flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-colors",
                   pathname === item.link
-                    ? "text-white bg-white/[0.1]"
-                    : "text-neutral-400 hover:text-white hover:bg-white/[0.05]"
+                    ? "text-white bg-white/[0.08]"
+                    : "text-white/50 hover:text-white hover:bg-white/[0.04]"
                 )}
               >
                 {item.icon}

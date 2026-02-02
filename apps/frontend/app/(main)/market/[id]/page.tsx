@@ -122,7 +122,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
 
   if (isMarketsLoading) {
     return (
-      <div className="container mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         <div className="animate-pulse space-y-4">
           <div className="h-8 w-64 bg-muted rounded" />
           <div className="h-12 w-3/4 bg-muted rounded" />
@@ -145,7 +145,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
 
   if (!market) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="max-w-7xl mx-auto px-4 py-8">
         <Card className="p-12 text-center">
           <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
           <h2 className="text-2xl font-bold mb-2">Market Not Found</h2>
@@ -175,7 +175,7 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
 
   return (
     <ErrorBoundary>
-      <div className="container mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
         {/* Header Section */}
         <div>
           <div className="flex flex-wrap items-center gap-2 mb-3">

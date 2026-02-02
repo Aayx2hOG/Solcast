@@ -4,29 +4,25 @@ import { useSolana } from "@/lib/contexts/SolanaContext";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useClaimablePositions } from "@/lib/hooks/useUserPositions";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { WobbleCardSimple } from "@/components/ui/wobble-card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PositionCard, PositionCardSkeleton } from "@/components/portfolio/PositionCard";
+import { PositionCard } from "@/components/portfolio/PositionCard";
 import { PositionListSkeleton, StatsGridSkeleton } from "@/components/ui/skeleton";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { 
   TrendingUp, 
   TrendingDown, 
-  Wallet, 
-  DollarSign, 
-  BarChart3,
+  Wallet,
   Trophy,
-  Clock,
   RefreshCw,
   History,
-  Filter
+  Briefcase
 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { MarketStatus, Outcome } from "@/lib/types";
+import { MarketStatus } from "@/lib/types";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 export default function PortfolioPage() {
   const { connected } = useWallet();
@@ -34,7 +30,6 @@ export default function PortfolioPage() {
   const [activeTab, setActiveTab] = useState("active");
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Get claimable positions
   const { claimablePositions, totalClaimable } = useClaimablePositions(markets);
 
   const portfolioStats = useMemo(() => {
@@ -71,7 +66,6 @@ export default function PortfolioPage() {
       .filter(({ market }) => market !== undefined);
   }, [userPositions, markets]);
 
-  // Filtered positions by tab
   const filteredPositions = useMemo(() => {
     return positionsWithMarkets.filter(({ market }) => {
       if (!market) return false;
@@ -89,28 +83,22 @@ export default function PortfolioPage() {
     });
   }, [positionsWithMarkets, activeTab, claimablePositions]);
 
-  // Handle claim
   const handleClaim = async (marketId: number) => {
     try {
       const tx = await claimWinnings(marketId);
-      toast.success("Winnings claimed successfully!", {
-        description: `Transaction: ${tx.slice(0, 8)}...`,
-      });
+      toast.success("Claimed!", { description: `TX: ${tx.slice(0, 8)}...` });
     } catch (error: any) {
-      toast.error("Failed to claim winnings", {
-        description: error.message,
-      });
+      toast.error("Failed", { description: error.message });
       throw error;
     }
   };
 
-  // Handle refresh
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
       await refreshPositions();
-      toast.success("Portfolio refreshed");
-    } catch (error) {
+      toast.success("Refreshed");
+    } catch {
       toast.error("Failed to refresh");
     } finally {
       setIsRefreshing(false);
@@ -119,13 +107,13 @@ export default function PortfolioPage() {
 
   if (!connected) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <Card className="p-8 sm:p-12 text-center">
-          <Wallet className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-          <h2 className="text-2xl font-bold mb-2">Connect Your Wallet</h2>
-          <p className="text-muted-foreground mb-4">
-            Please connect your wallet to view your portfolio
-          </p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <Card className="bg-white/[0.02] border-white/[0.06] p-12 text-center max-w-md mx-auto">
+          <div className="h-14 w-14 rounded-xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center mx-auto mb-5">
+            <Wallet className="h-6 w-6 text-indigo-400" />
+          </div>
+          <h2 className="text-lg font-medium text-white mb-2">Connect Wallet</h2>
+          <p className="text-sm text-white/50">Connect your wallet to view your portfolio</p>
         </Card>
       </div>
     );
@@ -133,13 +121,8 @@ export default function PortfolioPage() {
 
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="space-y-2">
-            <div className="h-10 w-40 bg-muted rounded animate-pulse" />
-            <div className="h-5 w-64 bg-muted rounded animate-pulse" />
-          </div>
-        </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        <div className="h-8 w-36 bg-white/[0.03] rounded animate-pulse" />
         <StatsGridSkeleton />
         <PositionListSkeleton />
       </div>
@@ -148,132 +131,92 @@ export default function PortfolioPage() {
 
   return (
     <ErrorBoundary>
-      <div className="container mx-auto px-4 py-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-bold mb-2">Portfolio</h1>
-            <p className="text-muted-foreground">Track your positions and performance</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-between"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10 border border-violet-500/20">
+              <Briefcase className="h-5 w-5 text-violet-400" />
+            </div>
+            <div>
+              <h1 className="text-lg font-medium text-white">Portfolio</h1>
+              <p className="text-sm text-white/50">Your positions</p>
+            </div>
           </div>
           <Button 
             variant="outline" 
             size="sm" 
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="self-start sm:self-auto"
+            className="h-8 px-3 text-xs border-white/[0.08] text-white/50 hover:text-white bg-white/[0.03]"
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
+            <RefreshCw className={`h-3 w-3 mr-1.5 ${isRefreshing ? "animate-spin" : ""}`} />
             Refresh
           </Button>
-        </div>
+        </motion.div>
 
-        {/* Claimable Banner */}
         {totalClaimable > 0 && (
-          <Card className="bg-gradient-to-r from-emerald-500/10 to-emerald-600/10 border-emerald-500/30">
-            <CardContent className="py-4">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-emerald-500/20">
-                    <Trophy className="h-6 w-6 text-emerald-500" />
-                  </div>
-                  <div>
-                    <p className="font-semibold">You have winnings to claim!</p>
-                    <p className="text-sm text-muted-foreground">
-                      ${totalClaimable.toFixed(2)} USDC available from {claimablePositions.length} market{claimablePositions.length > 1 ? "s" : ""}
-                    </p>
-                  </div>
-                </div>
-                <Button 
-                  onClick={() => setActiveTab("claimable")}
-                  className="bg-emerald-600 hover:bg-emerald-700"
-                >
-                  <Trophy className="h-4 w-4 mr-2" />
-                  Claim All
-                </Button>
+          <div className="flex items-center justify-between p-4 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                <Trophy className="h-4 w-4 text-emerald-400" />
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <p className="text-sm font-medium text-white">Winnings available</p>
+                <p className="text-xs text-white/50">${totalClaimable.toFixed(2)} from {claimablePositions.length} market(s)</p>
+              </div>
+            </div>
+            <Button 
+              size="sm"
+              onClick={() => setActiveTab("claimable")}
+              className="bg-emerald-500 hover:bg-emerald-600 h-8 px-4 text-xs"
+            >
+              Claim
+            </Button>
+          </div>
         )}
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          <WobbleCardSimple glowColor="34, 197, 94" className="p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs sm:text-sm font-medium text-white/80">Total Invested</span>
-              <DollarSign className="h-4 w-4 text-emerald-400" />
-            </div>
-            <div className="text-xl sm:text-2xl font-bold text-white">${portfolioStats.totalInvested}</div>
-            <p className="text-[10px] sm:text-xs text-white/50 mt-1">USDC invested</p>
-          </WobbleCardSimple>
-
-          <WobbleCardSimple glowColor="59, 130, 246" className="p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs sm:text-sm font-medium text-white/80">Current Value</span>
-              <BarChart3 className="h-4 w-4 text-blue-400" />
-            </div>
-            <div className="text-xl sm:text-2xl font-bold text-white">${portfolioStats.totalValue}</div>
-            <p className="text-[10px] sm:text-xs text-white/50 mt-1">Market value</p>
-          </WobbleCardSimple>
-
-          <WobbleCardSimple glowColor={portfolioStats.isProfitable ? "34, 197, 94" : "239, 68, 68"} className="p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs sm:text-sm font-medium text-white/80">Total P&L</span>
-              {portfolioStats.isProfitable ? (
-                <TrendingUp className="h-4 w-4 text-emerald-400" />
-              ) : (
-                <TrendingDown className="h-4 w-4 text-red-400" />
-              )}
-            </div>
-            <div
-              className={`text-xl sm:text-2xl font-bold ${
-                portfolioStats.isProfitable ? "text-emerald-400" : "text-red-400"
-              }`}
-            >
-            {portfolioStats.isProfitable ? "+" : ""}${portfolioStats.totalPnl}
-            </div>
-            <p className="text-[10px] sm:text-xs text-white/50 mt-1">
-              {portfolioStats.isProfitable ? "+" : ""}
-              {portfolioStats.pnlPercentage}%
-            </p>
-          </WobbleCardSimple>
-
-          <WobbleCardSimple glowColor="168, 85, 247" className="p-4 sm:p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs sm:text-sm font-medium text-white/80">Win Rate</span>
-              <Trophy className="h-4 w-4 text-purple-400" />
-            </div>
-            <div className="text-xl sm:text-2xl font-bold text-white">{portfolioStats.winRate}%</div>
-            <p className="text-[10px] sm:text-xs text-white/50 mt-1">
-              {portfolioStats.winningPositions}W / {portfolioStats.losingPositions}L
-            </p>
-          </WobbleCardSimple>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <StatBox label="Invested" value={`$${portfolioStats.totalInvested}`} />
+          <StatBox label="Value" value={`$${portfolioStats.totalValue}`} />
+          <StatBox 
+            label="P&L" 
+            value={`${portfolioStats.isProfitable ? "+" : ""}$${portfolioStats.totalPnl}`}
+            valueColor={portfolioStats.isProfitable ? "text-emerald-400" : "text-red-400"}
+            subtitle={`${portfolioStats.isProfitable ? "+" : ""}${portfolioStats.pnlPercentage}%`}
+          />
+          <StatBox 
+            label="Win Rate" 
+            value={`${portfolioStats.winRate}%`}
+            subtitle={`${portfolioStats.winningPositions}W / ${portfolioStats.losingPositions}L`}
+          />
         </div>
 
-        {/* Positions Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-            <TabsList className="w-full sm:w-auto">
-              <TabsTrigger value="all" className="flex-1 sm:flex-none">
-                All ({positionsWithMarkets.length})
+          <TabsList className="h-9 bg-white/[0.03] border border-white/[0.08]">
+            <TabsTrigger value="all" className="px-3 text-xs data-[state=active]:bg-white/[0.08] data-[state=active]:text-white">
+              All ({positionsWithMarkets.length})
+            </TabsTrigger>
+            <TabsTrigger value="active" className="px-3 text-xs data-[state=active]:bg-white/[0.08] data-[state=active]:text-white">
+              Active
+            </TabsTrigger>
+            <TabsTrigger value="resolved" className="px-3 text-xs data-[state=active]:bg-white/[0.08] data-[state=active]:text-white">
+              Resolved
+            </TabsTrigger>
+            {claimablePositions.length > 0 && (
+              <TabsTrigger value="claimable" className="px-3 text-xs data-[state=active]:bg-white/[0.08] data-[state=active]:text-white">
+                <Trophy className="h-3 w-3 mr-1" />
+                Claim ({claimablePositions.length})
               </TabsTrigger>
-              <TabsTrigger value="active" className="flex-1 sm:flex-none">
-                Active
-              </TabsTrigger>
-              <TabsTrigger value="resolved" className="flex-1 sm:flex-none">
-                Resolved
-              </TabsTrigger>
-              {claimablePositions.length > 0 && (
-                <TabsTrigger value="claimable" className="flex-1 sm:flex-none">
-                  <Trophy className="h-3 w-3 mr-1" />
-                  Claimable ({claimablePositions.length})
-                </TabsTrigger>
-              )}
-            </TabsList>
-          </div>
+            )}
+          </TabsList>
 
-          <TabsContent value={activeTab}>
+          <TabsContent value={activeTab} className="mt-4">
             {filteredPositions.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {filteredPositions.map(({ position, market }) => {
                   if (!market) return null;
                   return (
@@ -288,94 +231,57 @@ export default function PortfolioPage() {
                 })}
               </div>
             ) : (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  {activeTab === "claimable" ? (
-                    <>
-                      <Trophy className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                      <p className="text-muted-foreground mb-4">No winnings to claim</p>
-                      <p className="text-sm text-muted-foreground">
-                        When you win predictions, you can claim your winnings here.
-                      </p>
-                    </>
-                  ) : activeTab === "active" ? (
-                    <>
-                      <BarChart3 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                      <p className="text-muted-foreground mb-4">No active positions</p>
-                      <Link href="/explorer">
-                        <Button>Browse Markets</Button>
-                      </Link>
-                    </>
-                  ) : (
-                    <>
-                      <History className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                      <p className="text-muted-foreground mb-4">No positions found</p>
-                      <Link href="/explorer">
-                        <Button>Browse Markets</Button>
-                      </Link>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
+              <div className="bg-white/[0.02] border border-white/[0.06] rounded-lg p-12 text-center">
+                <div className="h-10 w-10 rounded-lg bg-white/[0.03] flex items-center justify-center mx-auto mb-3">
+                  <Briefcase className="h-5 w-5 text-white/20" />
+                </div>
+                <p className="text-sm text-white/50 mb-3">No positions</p>
+                <Link href="/explorer">
+                  <Button size="sm" className="h-8 px-4 text-xs bg-indigo-500 hover:bg-indigo-600">Browse Markets</Button>
+                </Link>
+              </div>
             )}
           </TabsContent>
         </Tabs>
 
-        {/* Trade History Section */}
-        <Card>
-          <CardHeader>
+        <Card className="bg-white/[0.02] border-white/[0.06]">
+          <CardHeader className="pb-3 pt-4 px-4">
             <div className="flex items-center justify-between">
-              <CardTitle>Recent Activity</CardTitle>
-              <Button variant="ghost" size="sm" className="text-xs">
-                <History className="h-4 w-4 mr-1" />
+              <CardTitle className="text-sm font-medium text-white flex items-center gap-2">
+                <History className="h-4 w-4 text-white/30" />
+                Recent Activity
+              </CardTitle>
+              <Button variant="ghost" size="sm" className="text-[10px] h-7 px-2 text-white/40 hover:text-white">
                 View All
               </Button>
             </div>
           </CardHeader>
-          <CardContent>
+          <CardContent className="px-4 pb-4">
             {userPositions.length > 0 ? (
-              <div className="space-y-3">
-                {/* Mock trade history - in production, this would come from the backend */}
-                {positionsWithMarkets.slice(0, 5).map(({ position, market }) => {
+              <div className="space-y-2">
+                {positionsWithMarkets.slice(0, 4).map(({ position, market }) => {
                   if (!market) return null;
                   return (
                     <div
                       key={`trade-${position.publicKey.toBase58()}`}
-                      className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                      className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02] border border-white/[0.06]"
                     >
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-full ${
-                          position.pnl >= 0 ? "bg-emerald-500/10" : "bg-red-500/10"
-                        }`}>
-                          {position.pnl >= 0 ? (
-                            <TrendingUp className="h-4 w-4 text-emerald-500" />
-                          ) : (
-                            <TrendingDown className="h-4 w-4 text-red-500" />
-                          )}
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`p-2 rounded-lg ${position.pnl >= 0 ? "bg-emerald-500/10" : "bg-red-500/10"}`}>
+                          {position.pnl >= 0 ? <TrendingUp className="h-3.5 w-3.5 text-emerald-400" /> : <TrendingDown className="h-3.5 w-3.5 text-red-400" />}
                         </div>
-                        <div>
-                          <p className="text-sm font-medium line-clamp-1">{market.question}</p>
-                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Badge variant="secondary" className="text-[10px]">
-                              {market.category}
-                            </Badge>
-                            <span>•</span>
-                            <span>
-                              {position.yesShares > 0 && `${position.yesShares} Yes`}
-                              {position.yesShares > 0 && position.noShares > 0 && ", "}
-                              {position.noShares > 0 && `${position.noShares} No`}
-                            </span>
-                          </div>
+                        <div className="min-w-0">
+                          <p className="text-xs text-white/70 truncate">{market.question}</p>
+                          <p className="text-[10px] text-white/30 mt-0.5">
+                            {position.yesShares > 0 && `${position.yesShares} Yes`}
+                            {position.yesShares > 0 && position.noShares > 0 && ", "}
+                            {position.noShares > 0 && `${position.noShares} No`}
+                          </p>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className={`text-sm font-medium ${
-                          position.pnl >= 0 ? "text-emerald-500" : "text-red-500"
-                        }`}>
+                      <div className="text-right shrink-0">
+                        <p className={`text-xs font-medium ${position.pnl >= 0 ? "text-emerald-400" : "text-red-400"}`}>
                           {position.pnl >= 0 ? "+" : ""}${(position.pnl / 1_000_000).toFixed(2)}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          ${(position.currentValue / 1_000_000).toFixed(2)} value
                         </p>
                       </div>
                     </div>
@@ -384,13 +290,33 @@ export default function PortfolioPage() {
               </div>
             ) : (
               <div className="text-center py-8">
-                <History className="h-8 w-8 mx-auto mb-2 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground">No recent activity</p>
+                <History className="h-5 w-5 text-white/20 mx-auto mb-2" />
+                <p className="text-xs text-white/30">No activity</p>
               </div>
             )}
           </CardContent>
         </Card>
       </div>
     </ErrorBoundary>
+  );
+}
+
+function StatBox({ 
+  label, 
+  value, 
+  subtitle, 
+  valueColor = "text-white" 
+}: { 
+  label: string; 
+  value: string; 
+  subtitle?: string;
+  valueColor?: string;
+}) {
+  return (
+    <div className="p-4 rounded-lg bg-white/[0.02] border border-white/[0.06]">
+      <div className="text-[10px] text-white/30 mb-1">{label}</div>
+      <p className={`text-lg font-semibold tabular-nums ${valueColor}`}>{value}</p>
+      {subtitle && <p className="text-[10px] text-white/30 mt-0.5">{subtitle}</p>}
+    </div>
   );
 }

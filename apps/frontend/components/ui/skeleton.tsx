@@ -265,7 +265,7 @@ export function LeaderboardSkeleton({ count = 10 }: { count?: number }) {
 // Page Loading Skeleton
 export function PageLoadingSkeleton() {
   return (
-    <div className="container mx-auto px-4 py-6 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
       <div className="space-y-2">
         <Skeleton className="h-10 w-64" />
         <Skeleton className="h-5 w-96" />

@@ -1,15 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { MarketCategory } from "@/lib/types";
 import { useSolana } from "@/lib/contexts/SolanaContext";
 import { useWallet } from "@solana/wallet-adapter-react";
-import { Loader2, Calendar, DollarSign } from "lucide-react";
+import { Loader2, Wallet, Sparkles, Plus, Info } from "lucide-react";
 import { toast } from "sonner";
+import { motion } from "framer-motion";
 
 export default function CreateMarketPage() {
   const { connected } = useWallet();
@@ -36,7 +36,6 @@ export default function CreateMarketPage() {
       return;
     }
 
-    // Validation
     if (formData.question.length < 10 || formData.question.length > 200) {
       toast.error("Question must be between 10 and 200 characters");
       return;
@@ -70,7 +69,7 @@ export default function CreateMarketPage() {
 
     setIsLoading(true);
     try {
-      const marketId = Date.now(); // Simple ID generation
+      const marketId = Date.now();
       
       const tx = await createMarket({
         marketId,
@@ -87,7 +86,6 @@ export default function CreateMarketPage() {
         description: `Transaction: ${tx.slice(0, 8)}...`,
       });
 
-      // Reset form
       setFormData({
         question: "",
         description: "",
@@ -110,198 +108,209 @@ export default function CreateMarketPage() {
 
   if (!connected) {
     return (
-      <div className="container mx-auto px-4 py-6">
-        <Card className="p-12 text-center max-w-2xl mx-auto">
-          <h2 className="text-2xl font-bold mb-2">Connect Your Wallet</h2>
-          <p className="text-muted-foreground">
-            Please connect your wallet to create a market
-          </p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <Card className="bg-white/[0.02] border-white/[0.06] p-12 text-center max-w-md mx-auto">
+          <div className="h-14 w-14 rounded-xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-center mx-auto mb-5">
+            <Wallet className="h-6 w-6 text-indigo-400" />
+          </div>
+          <h2 className="text-lg font-medium text-white mb-2">Connect Wallet</h2>
+          <p className="text-sm text-white/50">Connect your wallet to create a market</p>
         </Card>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-6">
-      <div className="max-w-3xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-4xl font-bold mb-2">Create Market</h1>
-          <p className="text-muted-foreground">
-            Create a new prediction market for others to trade on
-          </p>
-        </div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-xl mx-auto space-y-5">
+        <motion.div 
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center gap-3"
+        >
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+            <Plus className="h-5 w-5 text-emerald-400" />
+          </div>
+          <div>
+            <h1 className="text-lg font-medium text-white">Create Market</h1>
+            <p className="text-sm text-white/50">Launch a new prediction market</p>
+          </div>
+        </motion.div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Market Details</CardTitle>
-            <CardDescription>
-              Provide clear, unambiguous information about your market
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  Question <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  placeholder="Will Bitcoin reach $100,000 by end of 2025?"
-                  value={formData.question}
-                  onChange={(e) => setFormData({ ...formData, question: e.target.value })}
-                  maxLength={200}
-                  required
-                />
-                <p className="text-xs text-muted-foreground">
-                  {formData.question.length}/200 characters
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  Description <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  className="flex min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  placeholder="Provide detailed context about the market, resolution criteria, and data sources..."
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  maxLength={1000}
-                  required
-                />
-                <p className="text-xs text-muted-foreground">
-                  {formData.description.length}/1000 characters
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  Category <span className="text-red-500">*</span>
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {Object.values(MarketCategory).map((category) => (
-                    <Badge
-                      key={category}
-                      variant={formData.category === category ? "default" : "secondary"}
-                      className="cursor-pointer"
-                      onClick={() => setFormData({ ...formData, category })}
-                    >
-                      {category}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05 }}
+        >
+          <Card className="bg-white/[0.02] border-white/[0.06]">
+            <CardHeader className="pb-0 pt-5 px-5">
+              <p className="text-xs text-white/40">Fill in the market details below</p>
+            </CardHeader>
+            <CardContent className="px-5 pb-5 pt-4">
+              <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    Trading End Date <span className="text-red-500">*</span>
+                  <label className="text-sm text-white/70">
+                    Question <span className="text-red-400">*</span>
                   </label>
                   <Input
-                    type="date"
-                    value={formData.endDate}
-                    onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                    placeholder="Will Bitcoin reach $100,000 by end of 2025?"
+                    value={formData.question}
+                    onChange={(e) => setFormData({ ...formData, question: e.target.value })}
+                    maxLength={200}
                     required
+                    className="h-10 bg-white/[0.03] border-white/[0.08] text-white text-sm placeholder:text-white/25 focus:border-indigo-500/50 focus:ring-0"
                   />
+                  <p className="text-xs text-white/30">{formData.question.length}/200</p>
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">End Time <span className="text-red-500">*</span></label>
-                  <Input
-                    type="time"
-                    value={formData.endTime}
-                    onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-                    required
-                  />
-                </div>
-              </div>
 
-              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    Resolution Date <span className="text-red-500">*</span>
+                  <label className="text-sm text-white/70">
+                    Description <span className="text-red-400">*</span>
+                  </label>
+                  <textarea
+                    className="flex min-h-[100px] w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-2.5 text-sm text-white placeholder:text-white/25 focus:outline-none focus:border-indigo-500/50 resize-none"
+                    placeholder="Provide detailed resolution criteria..."
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    maxLength={1000}
+                    required
+                  />
+                  <p className="text-xs text-white/30">{formData.description.length}/1000</p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm text-white/70">
+                    Category <span className="text-red-400">*</span>
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {Object.values(MarketCategory).map((category) => (
+                      <button
+                        key={category}
+                        type="button"
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                          formData.category === category 
+                            ? "bg-indigo-500 text-white" 
+                            : "bg-white/[0.03] text-white/50 hover:bg-white/[0.06] border border-white/[0.08]"
+                        }`}
+                        onClick={() => setFormData({ ...formData, category })}
+                      >
+                        {category}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm text-white/70">
+                      Trading Ends <span className="text-red-400">*</span>
+                    </label>
+                    <Input
+                      type="date"
+                      value={formData.endDate}
+                      onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+                      required
+                      className="h-10 bg-white/[0.03] border-white/[0.08] text-white text-sm focus:border-indigo-500/50 focus:ring-0"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm text-white/70">Time <span className="text-red-400">*</span></label>
+                    <Input
+                      type="time"
+                      value={formData.endTime}
+                      onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                      required
+                      className="h-10 bg-white/[0.03] border-white/[0.08] text-white text-sm focus:border-indigo-500/50 focus:ring-0"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm text-white/70">
+                      Resolution Date <span className="text-red-400">*</span>
+                    </label>
+                    <Input
+                      type="date"
+                      value={formData.resolutionDate}
+                      onChange={(e) => setFormData({ ...formData, resolutionDate: e.target.value })}
+                      required
+                      className="h-10 bg-white/[0.03] border-white/[0.08] text-white text-sm focus:border-indigo-500/50 focus:ring-0"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm text-white/70">Time <span className="text-red-400">*</span></label>
+                    <Input
+                      type="time"
+                      value={formData.resolutionTime}
+                      onChange={(e) => setFormData({ ...formData, resolutionTime: e.target.value })}
+                      required
+                      className="h-10 bg-white/[0.03] border-white/[0.08] text-white text-sm focus:border-indigo-500/50 focus:ring-0"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm text-white/70">
+                    Oracle Source <span className="text-red-400">*</span>
                   </label>
                   <Input
-                    type="date"
-                    value={formData.resolutionDate}
-                    onChange={(e) => setFormData({ ...formData, resolutionDate: e.target.value })}
+                    placeholder="e.g., CoinGecko, ESPN, Official Website"
+                    value={formData.oracleSource}
+                    onChange={(e) => setFormData({ ...formData, oracleSource: e.target.value })}
+                    maxLength={100}
                     required
+                    className="h-10 bg-white/[0.03] border-white/[0.08] text-white text-sm placeholder:text-white/25 focus:border-indigo-500/50 focus:ring-0"
                   />
                 </div>
+
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Resolution Time <span className="text-red-500">*</span></label>
+                  <label className="text-sm text-white/70">
+                    Initial Liquidity (USDC) <span className="text-red-400">*</span>
+                  </label>
                   <Input
-                    type="time"
-                    value={formData.resolutionTime}
-                    onChange={(e) => setFormData({ ...formData, resolutionTime: e.target.value })}
+                    type="number"
+                    placeholder="10.00"
+                    value={formData.initialLiquidity}
+                    onChange={(e) => setFormData({ ...formData, initialLiquidity: e.target.value })}
+                    min="1"
+                    step="0.01"
                     required
+                    className="h-10 bg-white/[0.03] border-white/[0.08] text-white text-sm placeholder:text-white/25 focus:border-indigo-500/50 focus:ring-0"
                   />
+                  <p className="text-xs text-white/30">Minimum 1 USDC, split between Yes/No pools</p>
                 </div>
-              </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium">
-                  Oracle/Data Source <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  placeholder="e.g., CoinGecko, Official Government Website, ESPN"
-                  value={formData.oracleSource}
-                  onChange={(e) => setFormData({ ...formData, oracleSource: e.target.value })}
-                  maxLength={100}
-                  required
-                />
-                <p className="text-xs text-muted-foreground">
-                  Source that will be used to determine the outcome
-                </p>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium flex items-center gap-2">
-                  <DollarSign className="h-4 w-4" />
-                  Initial Liquidity (USDC) <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  type="number"
-                  placeholder="1.00"
-                  value={formData.initialLiquidity}
-                  onChange={(e) => setFormData({ ...formData, initialLiquidity: e.target.value })}
-                  min="1"
-                  step="0.01"
-                  required
-                />
-                <p className="text-xs text-muted-foreground">
-                  Minimum 1 USDC. This will be split equally between Yes and No pools.
-                </p>
-              </div>
-
-              <div className="pt-4">
-                <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                <Button 
+                  type="submit" 
+                  className="w-full h-10 text-sm font-medium bg-indigo-500 hover:bg-indigo-600 text-white" 
+                  disabled={isLoading}
+                >
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating Market...
+                      Creating...
                     </>
                   ) : (
-                    "Create Market"
+                    <>
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      Create Market
+                    </>
                   )}
                 </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+              </form>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-        <Card className="bg-muted/50">
-          <CardHeader>
-            <CardTitle className="text-base">Important Guidelines</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm space-y-2 text-muted-foreground">
-            <p>• Markets must have clear, objective resolution criteria</p>
-            <p>• Resolution date must be within 7 days after trading ends</p>
-            <p>• You'll be responsible for providing initial liquidity</p>
-            <p>• You (or protocol admin) will resolve the market using the specified oracle</p>
-            <p>• A small fee is collected on all trades to support the protocol</p>
-          </CardContent>
-        </Card>
+        <div className="flex items-start gap-3 p-4 rounded-lg bg-white/[0.02] border border-white/[0.06]">
+          <Info className="h-4 w-4 text-indigo-400 mt-0.5 shrink-0" />
+          <div className="text-xs text-white/40 space-y-1">
+            <p>• Questions must have clear, objective resolution criteria</p>
+            <p>• Resolution must occur within 7 days after trading ends</p>
+            <p>• You are responsible for resolving the market truthfully</p>
+          </div>
+        </div>
       </div>
     </div>
   );
