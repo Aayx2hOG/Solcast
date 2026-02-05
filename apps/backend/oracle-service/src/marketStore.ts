@@ -1,16 +1,8 @@
 import { Market } from "./models/Market";
 import { MarketType } from "./resolution/fetcherRegistry";
+import { prismaClient } from "db/client";
 
 export const ACTIVE_MARKETS: Market[] = [];
-
-// Try to load prisma client
-let prismaClient: any = null;
-try {
-  const dbModule = require('db');
-  prismaClient = dbModule.prismaClient;
-} catch (e) {
-  console.log('[marketStore] Database not available');
-}
 
 // Map database category to oracle market type
 function categoryToMarketType(category: string): MarketType | null {
@@ -35,15 +27,10 @@ function categoryToMarketType(category: string): MarketType | null {
 
 // Load markets from database
 export async function loadMarketsFromDB(): Promise<void> {
-  if (!prismaClient) {
-    console.log('[marketStore] No database connection - using manual input only');
-    return;
-  }
-
   try {
     const dbMarkets = await prismaClient.market.findMany({
       where: {
-        status: 'Active',
+        status: 'ACTIVE',
         endTimestamp: {
           gt: new Date(),
         },

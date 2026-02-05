@@ -128,6 +128,21 @@ model AnomalyDetection {
   @@index([createdAt])
 }
 
+model OracleResolution {
+  id          String   @id @default(uuid())
+  marketId    String
+  status      String   // RESOLVED, RETRY, etc
+  value       Float?   // Numeric value (for crypto prices)
+  valueString String?  // String value (for sports/elections)
+  confidence  Float
+  sources     Json     // Array of source data
+  createdAt   DateTime @default(now())
+
+  @@index([marketId])
+  @@index([createdAt])
+  @@index([marketId, createdAt])
+}
+
 enum MarketCategory {
   SPORTS
   POLITICS

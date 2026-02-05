@@ -11,6 +11,7 @@ import {
     usersRouter,
     fraudRouter,
     analyticsRouter,
+    oracleRouter,
 } from './routes';
 
 const app = express();
@@ -27,6 +28,7 @@ app.use('/api/trades', tradesRouter);
 app.use('/api', usersRouter);
 app.use('/api/fraud', fraudRouter);
 app.use('/api/analytics', analyticsRouter);
+app.use('/api/oracle', oracleRouter);
 
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', dbAvailable, timestamp: Date.now().toString() });

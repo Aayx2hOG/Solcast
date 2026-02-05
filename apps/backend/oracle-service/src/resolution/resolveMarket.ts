@@ -3,15 +3,7 @@ import { validate } from "../validation/validator";
 import { OracleData } from "../models/OracleData";
 import { ResolutionDecision } from "../types";
 import { AnomalyDetector } from "../ai/anomalyDetector";
-
-// Import prisma client - will work when DB is available
-let prismaClient: any = null;
-try {
-  const dbModule = require('db');
-  prismaClient = dbModule.prismaClient;
-} catch (e) {
-  console.log('[resolveMarket] Database not available - anomaly persistence disabled');
-}
+import { prismaClient } from "db/client";
 
 // Initialize global anomaly detector
 const anomalyDetector = new AnomalyDetector({

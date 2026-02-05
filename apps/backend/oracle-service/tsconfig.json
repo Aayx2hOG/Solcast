@@ -6,6 +6,10 @@
     "outDir": "dist",
     "strict": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "db/*": ["../../../packages/db/*"]
+    },
+    "baseUrl": "."
   }
 }

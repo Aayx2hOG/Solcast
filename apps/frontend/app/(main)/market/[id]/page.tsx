@@ -12,6 +12,7 @@ import { TradingPanel } from "@/components/market/TradingPanel";
 import { PriceChart } from "@/components/charts/PriceChart";
 import { OrderBook } from "@/components/market/OrderBook";
 import { ClaimButton } from "@/components/market/ClaimButton";
+import { OracleChart } from "@/components/charts/OracleChart";
 import { 
   ChartSkeleton, 
   TradingPanelSkeleton, 
@@ -336,6 +337,9 @@ export default function MarketDetailPage({ params }: { params: Promise<{ id: str
 
           {/* Price Chart */}
           <PriceChart data={chartData} />
+
+          {/* Oracle Live Feed - Real-time oracle data */}
+          <OracleChart marketId={market.oracleSource} />
 
           {/* Order Book */}
           <OrderBook
